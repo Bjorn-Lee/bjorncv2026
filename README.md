@@ -1,7 +1,7 @@
 # Bjorn Lee 李懿倢 — Interactive CV
  
 > 產品行銷企劃 · 品牌溝通 · CRM 精準行銷  
-> Product Marketing · Brand Communication · CRM & Sales Conversion
+> Marketing Communication · Brand Communication · CRM & Sales Conversion
  
 Live site → **[bjorn-lee.github.io/bjorncv2026](https://bjorn-lee.github.io/bjorncv2026/)**
  
@@ -15,7 +15,7 @@ This is a single-page interactive CV with three perspective modes:
 |------|------|----------|
 | Brand & Design | 品牌視覺企劃 | Design studios, brand agencies |
 | Specialty Coffee | 咖啡產業行銷 | F&B brands, coffee companies |
-| Customer Strategy | 產品行銷企劃 | Marketing teams, product companies |
+| MARCOM | 產品行銷企劃 | Marketing teams, product companies |
  
 Each mode presents the same person through a different professional lens — same experience, different emphasis and framing.
  
