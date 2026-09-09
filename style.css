@@ -100,8 +100,8 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   max-width: 1050px;
   margin: 0;
   font-size: clamp(3rem, 7.5vw, 7.8rem);
-  line-height: .92;
-  letter-spacing: -.055em;
+  line-height: 1;
+  letter-spacing: -.011em;
   font-weight: 700;
 }
 
