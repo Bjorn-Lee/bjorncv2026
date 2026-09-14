@@ -344,14 +344,14 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 .work-card { display: block; }
 .work-card-large { grid-row: span 2; }
 .work-card-wide { grid-column: 1 / -1; }
-.work-visual img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
+.work-visual { position: relative
+              ; min-height: 390px
+              ; overflow: hidden
+              ; display: flex
+              ; align-items: flex-end
+              ; padding: 2rem
+              ; color: var(--cream)
+              ; background: var(--g2);
 }
 }
 .work-card-large .work-visual { min-height: 700px; }
@@ -379,6 +379,15 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   font-weight: 700;
   line-height: .8;
   letter-spacing: -.07em;
+}
+.work-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 .visual-detail {
   position: absolute;
