@@ -703,3 +703,31 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
     transition-duration: .01ms !important;
   }
 }
+.work-visual {
+  position: relative;
+  overflow: hidden;
+}
+
+.work-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.visual-word,
+.visual-detail {
+  position: absolute;
+  z-index: 2;
+}
+
+.visual-word {
+  left: 24px;
+  bottom: 24px;
+}
+
+.visual-detail {
+  right: 24px;
+  bottom: 24px;
+}
