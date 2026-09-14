@@ -344,15 +344,15 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 .work-card { display: block; }
 .work-card-large { grid-row: span 2; }
 .work-card-wide { grid-column: 1 / -1; }
-.work-visual {
-  position: relative;
-  min-height: 390px;
-  overflow: hidden;
-  display: flex;
-  align-items: flex-end;
-  padding: 2rem;
-  color: var(--cream);
-  background: var(--g2);
+.work-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
 }
 .work-card-large .work-visual { min-height: 700px; }
 .work-card-wide .work-visual { min-height: 440px; }
@@ -702,32 +702,4 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
     animation-duration: .01ms !important;
     transition-duration: .01ms !important;
   }
-}
-.work-visual {
-  position: relative;
-  overflow: hidden;
-}
-
-.work-visual img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-}
-
-.visual-word,
-.visual-detail {
-  position: absolute;
-  z-index: 2;
-}
-
-.visual-word {
-  left: 24px;
-  bottom: 24px;
-}
-
-.visual-detail {
-  right: 24px;
-  bottom: 24px;
 }
