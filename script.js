@@ -78,188 +78,190 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 /* =========================
-   WORK — INFINITE HORIZONTAL SCROLL
+   WORK — INFINITE CAROUSEL
    ========================= */
-
 document.addEventListener("DOMContentLoaded", () => {
-
   const rail = document.querySelector(".work-scroll");
-
   if (!rail) return;
-
   const originalCards = Array.from(
     rail.querySelectorAll(".work-card")
   );
-
   if (originalCards.length < 2) return;
-
-
   /* =========================
-     CLONE CARDS
+     CREATE CLONES
      ========================= */
-
+  // Clone cards BEFORE the originals
+  const prependFragment = document.createDocumentFragment();
   originalCards.forEach(card => {
     const clone = card.cloneNode(true);
-    clone.dataset.clone = "true";
-    rail.appendChild(clone);
+    clone.dataset.clone = "before";
+    prependFragment.appendChild(clone);
   });
-
-
-  /* =========================
-     CALCULATE LOOP WIDTH
-     ========================= */
-
-  let loopWidth = 0;
-
-  const calculateLoopWidth = () => {
-
-    const firstClone = rail.querySelector(
-      '.work-card[data-clone="true"]'
-    );
-
-    if (!firstClone) return;
-
-    loopWidth =
-      firstClone.offsetLeft -
-      originalCards[0].offsetLeft;
-  };
-
-
-  calculateLoopWidth();
-
-  window.addEventListener(
-    "resize",
-    calculateLoopWidth
+  rail.insertBefore(
+    prependFragment,
+    originalCards[0]
   );
-
-
+  // Clone cards AFTER the originals
+  const appendFragment = document.createDocumentFragment();
+  originalCards.forEach(card => {
+    const clone = card.cloneNode(true);
+    clone.dataset.clone = "after";
+    appendFragment.appendChild(clone);
+  });
+  rail.appendChild(appendFragment);
+  /* =========================
+     CALCULATE ORIGINAL WIDTH
+     ========================= */
+  let loopWidth = 0;
+  const calculateLoopWidth = () => {
+    const firstOriginal = rail.querySelector(
+      '.work-card:not([data-clone])'
+    );
+    const firstAfterClone = rail.querySelector(
+      '.work-card[data-clone="after"]'
+    );
+    if (!firstOriginal || !firstAfterClone) return;
+    loopWidth =
+      firstAfterClone.offsetLeft -
+      firstOriginal.offsetLeft;
+  };
+  /* =========================
+     INITIAL POSITION
+     ========================= */
+  const setInitialPosition = () => {
+    calculateLoopWidth();
+    if (!loopWidth) return;
+    const firstOriginal = rail.querySelector(
+      '.work-card:not([data-clone])'
+    );
+    rail.scrollLeft =
+      firstOriginal.offsetLeft;
+  };
+  /*
+   * Wait for images/layout to finish
+   * before calculating positions.
+   */
+  window.requestAnimationFrame(() => {
+    setInitialPosition();
+  });
+  window.addEventListener(
+    "load",
+    setInitialPosition
+  );
   /* =========================
      INFINITE LOOP
      ========================= */
-
-  const handleInfiniteScroll = () => {
-
-    if (!loopWidth) return;
-
-    if (rail.scrollLeft >= loopWidth) {
-
-      rail.scrollLeft -= loopWidth;
-
-    }
-
-    if (rail.scrollLeft <= 0) {
-
-      rail.scrollLeft += loopWidth;
-
-    }
-  };
-
-
+  let isRepositioning = false;
   rail.addEventListener(
     "scroll",
-    handleInfiniteScroll,
+    () => {
+      if (!loopWidth || isRepositioning) return;
+      const firstOriginal = rail.querySelector(
+        '.work-card:not([data-clone])'
+      );
+      if (!firstOriginal) return;
+      const start =
+        firstOriginal.offsetLeft;
+      /*
+       * Scrolled too far RIGHT
+       */
+      if (
+        rail.scrollLeft >=
+        start + loopWidth
+      ) {
+        isRepositioning = true;
+        rail.scrollLeft -= loopWidth;
+        requestAnimationFrame(() => {
+          isRepositioning = false;
+        });
+      }
+      /*
+       * Scrolled too far LEFT
+       */
+      else if (
+        rail.scrollLeft < start
+      ) {
+        isRepositioning = true;
+        rail.scrollLeft += loopWidth;
+        requestAnimationFrame(() => {
+          isRepositioning = false;
+        });
+      }
+    },
     { passive: true }
   );
-
-
   /* =========================
-     MOUSE WHEEL
+     MOUSE WHEEL → HORIZONTAL
      ========================= */
-
   rail.addEventListener(
     "wheel",
     (event) => {
-
-      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
-
+      if (
+        Math.abs(event.deltaY) >
+        Math.abs(event.deltaX)
+      ) {
         event.preventDefault();
-
         rail.scrollLeft += event.deltaY;
       }
-
     },
     { passive: false }
   );
-
-
   /* =========================
      MOUSE DRAG
      ========================= */
-
   let isDragging = false;
   let startX = 0;
   let startScrollLeft = 0;
-
-
   rail.addEventListener(
     "pointerdown",
     (event) => {
-
       if (event.pointerType === "touch") return;
-
       isDragging = true;
-
-      rail.classList.add("is-dragging");
-
       startX = event.clientX;
-
       startScrollLeft = rail.scrollLeft;
-
-      rail.setPointerCapture(event.pointerId);
+      rail.classList.add("is-dragging");
+      rail.setPointerCapture(
+        event.pointerId
+      );
     }
   );
-
-
   rail.addEventListener(
     "pointermove",
     (event) => {
-
       if (!isDragging) return;
-
       const distance =
         event.clientX - startX;
-
       rail.scrollLeft =
         startScrollLeft - distance;
     }
   );
-
-
   const stopDragging = () => {
-
-    if (!isDragging) return;
-
     isDragging = false;
-
-    rail.classList.remove("is-dragging");
+    rail.classList.remove(
+      "is-dragging"
+    );
   };
-
-
   rail.addEventListener(
     "pointerup",
     stopDragging
   );
-
   rail.addEventListener(
     "pointercancel",
     stopDragging
   );
-
   rail.addEventListener(
     "lostpointercapture",
     stopDragging
   );
-
-
   /* =========================
      PREVENT IMAGE DRAG
      ========================= */
-
   rail.querySelectorAll("img").forEach(img => {
-
     img.addEventListener(
       "dragstart",
-      event => event.preventDefault()
+      event => {
+        event.preventDefault();
+      }
     );
 
   });
