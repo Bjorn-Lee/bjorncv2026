@@ -346,13 +346,17 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   flex-direction: row;
   flex-wrap: nowrap;
   gap: clamp(1rem, 2vw, 2rem);
-  width: 100%;
+  /* 從 container 左側延伸到 viewport 右側 */
+  width: calc(
+    100vw - max(
+      1.25rem,
+      (100vw - 1120px) / 2
+    )
+  );
   max-width: none;
   overflow-x: auto;
   overflow-y: hidden;
   padding: .75rem 0 2rem;
-  scroll-behavior: auto;
-  scroll-snap-type: none;
   scrollbar-width: none;
   -ms-overflow-style: none;
   cursor: grab;
