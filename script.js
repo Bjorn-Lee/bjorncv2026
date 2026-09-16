@@ -77,3 +77,191 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+/* =========================
+   WORK — INFINITE HORIZONTAL SCROLL
+   ========================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const rail = document.querySelector(".work-scroll");
+
+  if (!rail) return;
+
+  const originalCards = Array.from(
+    rail.querySelectorAll(".work-card")
+  );
+
+  if (originalCards.length < 2) return;
+
+
+  /* =========================
+     CLONE CARDS
+     ========================= */
+
+  originalCards.forEach(card => {
+    const clone = card.cloneNode(true);
+    clone.dataset.clone = "true";
+    rail.appendChild(clone);
+  });
+
+
+  /* =========================
+     CALCULATE LOOP WIDTH
+     ========================= */
+
+  let loopWidth = 0;
+
+  const calculateLoopWidth = () => {
+
+    const firstClone = rail.querySelector(
+      '.work-card[data-clone="true"]'
+    );
+
+    if (!firstClone) return;
+
+    loopWidth =
+      firstClone.offsetLeft -
+      originalCards[0].offsetLeft;
+  };
+
+
+  calculateLoopWidth();
+
+  window.addEventListener(
+    "resize",
+    calculateLoopWidth
+  );
+
+
+  /* =========================
+     INFINITE LOOP
+     ========================= */
+
+  const handleInfiniteScroll = () => {
+
+    if (!loopWidth) return;
+
+    if (rail.scrollLeft >= loopWidth) {
+
+      rail.scrollLeft -= loopWidth;
+
+    }
+
+    if (rail.scrollLeft <= 0) {
+
+      rail.scrollLeft += loopWidth;
+
+    }
+  };
+
+
+  rail.addEventListener(
+    "scroll",
+    handleInfiniteScroll,
+    { passive: true }
+  );
+
+
+  /* =========================
+     MOUSE WHEEL
+     ========================= */
+
+  rail.addEventListener(
+    "wheel",
+    (event) => {
+
+      if (Math.abs(event.deltaY) > Math.abs(event.deltaX)) {
+
+        event.preventDefault();
+
+        rail.scrollLeft += event.deltaY;
+      }
+
+    },
+    { passive: false }
+  );
+
+
+  /* =========================
+     MOUSE DRAG
+     ========================= */
+
+  let isDragging = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+
+
+  rail.addEventListener(
+    "pointerdown",
+    (event) => {
+
+      if (event.pointerType === "touch") return;
+
+      isDragging = true;
+
+      rail.classList.add("is-dragging");
+
+      startX = event.clientX;
+
+      startScrollLeft = rail.scrollLeft;
+
+      rail.setPointerCapture(event.pointerId);
+    }
+  );
+
+
+  rail.addEventListener(
+    "pointermove",
+    (event) => {
+
+      if (!isDragging) return;
+
+      const distance =
+        event.clientX - startX;
+
+      rail.scrollLeft =
+        startScrollLeft - distance;
+    }
+  );
+
+
+  const stopDragging = () => {
+
+    if (!isDragging) return;
+
+    isDragging = false;
+
+    rail.classList.remove("is-dragging");
+  };
+
+
+  rail.addEventListener(
+    "pointerup",
+    stopDragging
+  );
+
+  rail.addEventListener(
+    "pointercancel",
+    stopDragging
+  );
+
+  rail.addEventListener(
+    "lostpointercapture",
+    stopDragging
+  );
+
+
+  /* =========================
+     PREVENT IMAGE DRAG
+     ========================= */
+
+  rail.querySelectorAll("img").forEach(img => {
+
+    img.addEventListener(
+      "dragstart",
+      event => event.preventDefault()
+    );
+
+  });
+
+});
