@@ -53,30 +53,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }, { passive: true });
 
-  // Slight pointer movement for portfolio visuals.
-  document.querySelectorAll(".work-card").forEach((card) => {
-    const visual = card.querySelector(".work-visual");
-    if (!visual) return;
 
-    card.addEventListener("pointermove", (event) => {
-      const rect = card.getBoundingClientRect();
-      const x = (event.clientX - rect.left) / rect.width - 0.5;
-      const y = (event.clientY - rect.top) / rect.height - 0.5;
-      visual.style.transform = `translate(${x * 5}px, ${y * 5}px)`;
-    });
-
-    card.addEventListener("pointerleave", () => {
-      visual.style.transform = "";
-    });
-  });
-
-  // Keyboard-friendly external links.
-  document.querySelectorAll('a[target="_blank"]').forEach((link) => {
-    link.addEventListener("click", () => {
-      link.blur();
-    });
-  });
-});
 /* =========================
    WORK — INFINITE CAROUSEL
    ========================= */
@@ -116,16 +93,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.createDocumentFragment();
 
 
-  cards.forEach(card => {
+cards.forEach((card) => {
+  const beforeClone = card.cloneNode(true);
+  beforeClone.dataset.clone = "before";
+  beforeClone.setAttribute("aria-hidden", "true");
+  beforeClone.tabIndex = -1;
+  beforeFragment.appendChild(beforeClone);
 
-    const beforeClone =
-      card.cloneNode(true);
-
-    beforeClone.dataset.clone = "before";
-
-    beforeFragment.appendChild(
-      beforeClone
-    );
+  const afterClone = card.cloneNode(true);
+  afterClone.dataset.clone = "after";
+  afterClone.setAttribute("aria-hidden", "true");
+  afterClone.tabIndex = -1;
+  afterFragment.appendChild(afterClone);
+});
 
 
     const afterClone =
