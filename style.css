@@ -362,6 +362,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
+  animation: scrolling 10s linear infinite;
 }
 .work-scroll::-webkit-scrollbar {
   display: none;
