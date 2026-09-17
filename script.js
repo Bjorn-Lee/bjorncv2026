@@ -107,30 +107,6 @@ cards.forEach((card) => {
   afterFragment.appendChild(afterClone);
 });
 
-
-    const afterClone =
-      card.cloneNode(true);
-
-    afterClone.dataset.clone = "after";
-
-    afterFragment.appendChild(
-      afterClone
-    );
-
-  });
-
-
-  rail.insertBefore(
-    beforeFragment,
-    cards[0]
-  );
-
-
-  rail.appendChild(
-    afterFragment
-  );
-
-
   /* =========================
      GET REAL CARDS
      ========================= */
