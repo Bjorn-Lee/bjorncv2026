@@ -343,14 +343,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   width: calc(100vw - max(1.25rem, (100vw - 1120px) / 2));
   overflow: hidden;
 }
-@keyframes scrolling {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(calc(-50% - 1rem));
-  }
-}
 
 .work-scroll {
   position: relative;
@@ -358,7 +350,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   flex-direction: row;
   flex-wrap: nowrap;
   gap: 2rem;
-  animation: scrolling 10s linear infinite;
   /* 從 container 左側延伸到 viewport 右側 */
   width: max content;
   max-width: none;
@@ -369,7 +360,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  animation: scrolling 10s linear infinite;
 }
 .work-scroll::-webkit-scrollbar {
   display: none;
