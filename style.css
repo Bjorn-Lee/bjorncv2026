@@ -400,14 +400,15 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 /* =========================
    IMAGE HOVER
    ========================= */
-.work-card:hover block {
-  transform: scale(1.2);
+.work-card:hover img {
+  transform: scale(1.3);
 }
 /* =========================
    CARD HOVER
    ========================= */
-.work-card:hover {
+.card:hover {
   transform: translateY(-8px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 /* =========================
    VISUAL OVERLAY EFFECT
