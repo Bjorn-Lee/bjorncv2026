@@ -1,7 +1,5 @@
 /* BJORN LEE — Personal Brand Website / V1 */
 
-@import url("https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap");
-
 :root {
   --g: #18472b;
   --g2: #1f5534;
@@ -406,7 +404,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 /* =========================
    CARD HOVER
    ========================= */
-.card:hover {
+.work-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
@@ -521,33 +519,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 }
 .work-footer a {
   color: var(--g);
-}
-/* =========================
-   MOBILE
-   ========================= */
-@media (max-width: 600px) {
-  .work-scroll {
-    gap: 1rem;
-    padding-bottom: 1.5rem;
-  }
-  .work-card {
-    flex: 0 0 78vw;
-    width: 78vw;
-    min-width: 78vw;
-  }
-
-  .work-overlay {
-    padding: 1.25rem;
-  }
-
-  .work-overlay h3 {
-    font-size: 1.35rem;
-  }
-
-  .visual-detail {
-    top: 1.25rem;
-    right: 1.25rem;
-  }
 }
 
 /* Impact */
@@ -792,13 +763,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .hero-grid { grid-template-columns: 1fr; padding-block: 6rem 5rem; }
   .hero-index { margin-bottom: 1rem; }
   .hero-bottom { align-items: start; flex-direction: column; }
-  .circle-link { width: 76px; height: 76px; }
-  .work-grid { grid-template-columns: 1fr; }
-  .work-card-large { grid-row: auto; }
-  .work-card-wide { grid-column: auto; }
-  .work-card-large .work-visual,
-  .work-visual,
-  .work-card-wide .work-visual { min-height: 420px; }
+  .circle-link { width: 76px; height: 76px; 
   .experience-row { grid-template-columns: 1fr; gap: 1rem; }
   .exp-heading { flex-direction: column; gap: .6rem; }
   .capability-line,
