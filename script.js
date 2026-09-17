@@ -80,190 +80,424 @@ document.addEventListener("DOMContentLoaded", () => {
 /* =========================
    WORK — INFINITE CAROUSEL
    ========================= */
+
 document.addEventListener("DOMContentLoaded", () => {
+
   const rail = document.querySelector(".work-scroll");
+
   if (!rail) return;
-  const originalCards = Array.from(
+
+  const cards = Array.from(
     rail.querySelectorAll(".work-card")
   );
-  if (originalCards.length < 2) return;
+
+  if (cards.length < 2) return;
+
+
   /* =========================
      CREATE CLONES
      ========================= */
-  // Clone cards BEFORE the originals
-  const prependFragment = document.createDocumentFragment();
-  originalCards.forEach(card => {
-    const clone = card.cloneNode(true);
-    clone.dataset.clone = "before";
-    prependFragment.appendChild(clone);
+
+  /*
+   * We create:
+   *
+   * [clone][clone][clone][clone]
+   * [real ][real ][real ][real ]
+   * [clone][clone][clone][clone]
+   *
+   * This gives us room to move
+   * in both directions.
+   */
+
+  const beforeFragment =
+    document.createDocumentFragment();
+
+  const afterFragment =
+    document.createDocumentFragment();
+
+
+  cards.forEach(card => {
+
+    const beforeClone =
+      card.cloneNode(true);
+
+    beforeClone.dataset.clone = "before";
+
+    beforeFragment.appendChild(
+      beforeClone
+    );
+
+
+    const afterClone =
+      card.cloneNode(true);
+
+    afterClone.dataset.clone = "after";
+
+    afterFragment.appendChild(
+      afterClone
+    );
+
   });
+
+
   rail.insertBefore(
-    prependFragment,
-    originalCards[0]
+    beforeFragment,
+    cards[0]
   );
-  // Clone cards AFTER the originals
-  const appendFragment = document.createDocumentFragment();
-  originalCards.forEach(card => {
-    const clone = card.cloneNode(true);
-    clone.dataset.clone = "after";
-    appendFragment.appendChild(clone);
-  });
-  rail.appendChild(appendFragment);
+
+
+  rail.appendChild(
+    afterFragment
+  );
+
+
   /* =========================
-     CALCULATE ORIGINAL WIDTH
+     GET REAL CARDS
      ========================= */
+
+  const realCards =
+    Array.from(
+      rail.querySelectorAll(
+        '.work-card:not([data-clone])'
+      )
+    );
+
+
+  /* =========================
+     CALCULATE LOOP WIDTH
+     ========================= */
+
   let loopWidth = 0;
+
+
   const calculateLoopWidth = () => {
-    const firstOriginal = rail.querySelector(
-      '.work-card:not([data-clone])'
-    );
-    const firstAfterClone = rail.querySelector(
-      '.work-card[data-clone="after"]'
-    );
-    if (!firstOriginal || !firstAfterClone) return;
+
+    if (
+      !realCards[0] ||
+      !realCards[1]
+    ) return;
+
+
+    /*
+     * Distance between the first
+     * and second real card.
+     */
+
+    const cardStep =
+      realCards[1].offsetLeft -
+      realCards[0].offsetLeft;
+
+
+    /*
+     * 4 cards × card step
+     */
+
     loopWidth =
-      firstAfterClone.offsetLeft -
-      firstOriginal.offsetLeft;
+      cardStep * realCards.length;
+
   };
+
+
   /* =========================
      INITIAL POSITION
      ========================= */
+
   const setInitialPosition = () => {
+
     calculateLoopWidth();
+
     if (!loopWidth) return;
-    const firstOriginal = rail.querySelector(
-      '.work-card:not([data-clone])'
-    );
+
+
+    /*
+     * Start at the REAL first card,
+     * not the beginning of the clones.
+     */
+
     rail.scrollLeft =
-      firstOriginal.offsetLeft;
+      realCards[0].offsetLeft;
+
   };
+
+
   /*
-   * Wait for images/layout to finish
-   * before calculating positions.
+   * Wait until layout is ready.
    */
-  window.requestAnimationFrame(() => {
-    setInitialPosition();
+
+  requestAnimationFrame(() => {
+
+    requestAnimationFrame(() => {
+
+      setInitialPosition();
+
+    });
+
   });
+
+
   window.addEventListener(
     "load",
     setInitialPosition
   );
+
+
+  window.addEventListener(
+    "resize",
+    () => {
+
+      calculateLoopWidth();
+
+    }
+  );
+
+
   /* =========================
      INFINITE LOOP
      ========================= */
-  let isRepositioning = false;
+
+  let resetting = false;
+
+
   rail.addEventListener(
     "scroll",
     () => {
-      if (!loopWidth || isRepositioning) return;
-      const firstOriginal = rail.querySelector(
-        '.work-card:not([data-clone])'
-      );
-      if (!firstOriginal) return;
-      const start =
-        firstOriginal.offsetLeft;
-      /*
-       * Scrolled too far RIGHT
-       */
+
       if (
-        rail.scrollLeft >=
+        !loopWidth ||
+        resetting
+      ) return;
+
+
+      const firstReal =
+        realCards[0];
+
+
+      if (!firstReal) return;
+
+
+      const start =
+        firstReal.offsetLeft;
+
+
+      const current =
+        rail.scrollLeft;
+
+
+      /*
+       * TOO FAR RIGHT
+       *
+       * 01 02 03 04
+       *          ↓
+       *          01 02 03 04
+       */
+
+      if (
+        current >=
         start + loopWidth
       ) {
-        isRepositioning = true;
-        rail.scrollLeft -= loopWidth;
+
+        resetting = true;
+
+
+        rail.scrollLeft =
+          current - loopWidth;
+
+
         requestAnimationFrame(() => {
-          isRepositioning = false;
+
+          resetting = false;
+
         });
+
       }
+
+
       /*
-       * Scrolled too far LEFT
+       * TOO FAR LEFT
+       *
+       * clone 01 02 03 04
+       *        ↓
+       *        real 01
        */
+
       else if (
-        rail.scrollLeft < start
+        current <
+        start
       ) {
-        isRepositioning = true;
-        rail.scrollLeft += loopWidth;
+
+        resetting = true;
+
+
+        rail.scrollLeft =
+          current + loopWidth;
+
+
         requestAnimationFrame(() => {
-          isRepositioning = false;
+
+          resetting = false;
+
         });
+
       }
+
     },
-    { passive: true }
+    {
+      passive: true
+    }
   );
+
+
   /* =========================
-     MOUSE WHEEL → HORIZONTAL
+     MOUSE WHEEL
      ========================= */
+
   rail.addEventListener(
     "wheel",
-    (event) => {
+    event => {
+
+      /*
+       * Convert vertical mouse wheel
+       * into horizontal movement.
+       */
+
       if (
         Math.abs(event.deltaY) >
         Math.abs(event.deltaX)
       ) {
+
         event.preventDefault();
-        rail.scrollLeft += event.deltaY;
+
+        rail.scrollLeft +=
+          event.deltaY;
+
       }
+
     },
-    { passive: false }
+    {
+      passive: false
+    }
   );
+
+
   /* =========================
      MOUSE DRAG
      ========================= */
+
   let isDragging = false;
+
   let startX = 0;
+
   let startScrollLeft = 0;
+
+
   rail.addEventListener(
     "pointerdown",
-    (event) => {
-      if (event.pointerType === "touch") return;
+    event => {
+
+      /*
+       * Let mobile use native
+       * touch scrolling.
+       */
+
+      if (
+        event.pointerType === "touch"
+      ) return;
+
+
       isDragging = true;
-      startX = event.clientX;
-      startScrollLeft = rail.scrollLeft;
-      rail.classList.add("is-dragging");
+
+
+      startX =
+        event.clientX;
+
+
+      startScrollLeft =
+        rail.scrollLeft;
+
+
+      rail.classList.add(
+        "is-dragging"
+      );
+
+
       rail.setPointerCapture(
         event.pointerId
       );
+
     }
   );
+
+
   rail.addEventListener(
     "pointermove",
-    (event) => {
+    event => {
+
       if (!isDragging) return;
+
+
       const distance =
-        event.clientX - startX;
+        event.clientX -
+        startX;
+
+
       rail.scrollLeft =
-        startScrollLeft - distance;
+        startScrollLeft -
+        distance;
+
     }
   );
+
+
   const stopDragging = () => {
+
+    if (!isDragging) return;
+
+
     isDragging = false;
+
+
     rail.classList.remove(
       "is-dragging"
     );
+
   };
+
+
   rail.addEventListener(
     "pointerup",
     stopDragging
   );
+
+
   rail.addEventListener(
     "pointercancel",
     stopDragging
   );
+
+
   rail.addEventListener(
     "lostpointercapture",
     stopDragging
   );
+
+
   /* =========================
      PREVENT IMAGE DRAG
      ========================= */
-  rail.querySelectorAll("img").forEach(img => {
-    img.addEventListener(
-      "dragstart",
-      event => {
-        event.preventDefault();
-      }
-    );
 
-  });
+  rail
+    .querySelectorAll("img")
+    .forEach(img => {
+
+      img.addEventListener(
+        "dragstart",
+        event => {
+
+          event.preventDefault();
+
+        }
+      );
+
+    });
 
 });
