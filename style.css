@@ -395,6 +395,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   height: 100%;
   display: block;
   object-fit: cover;
+  border-radius: 8px;
   transition: transform .6s var(--ease);
 }
 /* =========================
@@ -407,7 +408,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
    CARD HOVER
    ========================= */
 .card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-10px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
 }
 /* =========================
