@@ -52,24 +52,100 @@ document.addEventListener("DOMContentLoaded", () => {
       ticking = true;
     }
   }, { passive: true });
+initWorkCarousel();
+
 
 
 /* =========================
    WORK — INFINITE CAROUSEL
    ========================= */
+function initWorkCarousel() {
+  const rail = document.querySelector(".work-window");
+  const track = document.querySelector(".work-scroll");
 
-document.addEventListener("DOMContentLoaded", () => {
+  if (!rail || !track) return;
 
-  const rail = document.querySelector(".work-scroll");
-
-  if (!rail) return;
-
-  const cards = Array.from(
-    rail.querySelectorAll(".work-card")
-  );
+  const cards = Array.from(track.querySelectorAll(".work-card"));
 
   if (cards.length < 2) return;
 
+  const beforeFragment = document.createDocumentFragment();
+  const afterFragment = document.createDocumentFragment();
+
+  cards.forEach((card) => {
+    const beforeClone = card.cloneNode(true);
+    beforeClone.dataset.clone = "before";
+    beforeClone.setAttribute("aria-hidden", "true");
+    beforeClone.tabIndex = -1;
+    beforeFragment.appendChild(beforeClone);
+
+    const afterClone = card.cloneNode(true);
+    afterClone.dataset.clone = "after";
+    afterClone.setAttribute("aria-hidden", "true");
+    afterClone.tabIndex = -1;
+    afterFragment.appendChild(afterClone);
+  });
+
+  track.insertBefore(beforeFragment, cards[0]);
+  track.appendChild(afterFragment);
+
+  const realCards = Array.from(
+    track.querySelectorAll('.work-card:not([data-clone])')
+  );
+
+  let loopWidth = 0;
+  let resetting = false;
+
+  const calculateLoopWidth = () => {
+    if (!realCards[0] || !realCards[1]) return;
+
+    const cardStep =
+      realCards[1].offsetLeft - realCards[0].offsetLeft;
+
+    loopWidth = cardStep * realCards.length;
+  };
+
+  const setInitialPosition = () => {
+    calculateLoopWidth();
+
+    if (!loopWidth) return;
+
+    rail.scrollLeft = realCards[0].offsetLeft;
+  };
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(setInitialPosition);
+  });
+
+  window.addEventListener("load", setInitialPosition);
+
+  window.addEventListener("resize", () => {
+    calculateLoopWidth();
+  });
+
+  rail.addEventListener("scroll", () => {
+    if (!loopWidth || resetting) return;
+
+    const start = realCards[0].offsetLeft;
+    const current = rail.scrollLeft;
+
+    if (current >= start + loopWidth) {
+      resetting = true;
+      rail.scrollLeft = current - loopWidth;
+
+      requestAnimationFrame(() => {
+        resetting = false;
+      });
+    } else if (current < start) {
+      resetting = true;
+      rail.scrollLeft = current + loopWidth;
+
+      requestAnimationFrame(() => {
+        resetting = false;
+      });
+    }
+  }, { passive: true });
+}
 
   /* =========================
      CREATE CLONES
