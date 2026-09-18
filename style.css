@@ -338,7 +338,8 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
    WORK — HORIZONTAL RAIL
    ========================= */
 .work-window {
-  width: calc(100vw - max(1.25rem, (100vw - 1120px) / 2));
+  width: 100vw
+    margin-left: calc(50%-50vw)
   overflow: hidden;
 }
 
@@ -347,12 +348,12 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
-  gap: 2rem;
+  gap: clamp(1rem, 2vw, 2rem);
   /* 從 container 左側延伸到 viewport 右側 */
   width: max content;
   max-width: none;
   overflow-y: hidden;
-  padding: .75rem 0 2rem;
+  padding: .75rem calc(var(--pad) * 0.5) 2rem;
   scrollbar-width: none;
   -ms-overflow-style: none;
   cursor: grab;
