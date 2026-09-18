@@ -372,9 +372,9 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 
 .work-card {
   position: relative;
-  flex: 0 0 clamp(260px, 30vw, 480px);
-  width: clamp(260px, 30vw, 480px);
-  aspect-ratio: 5/4;
+  flex: 0 0 clamp(260px, 30vw, 380px);
+  width: clamp(260px, 30vw, 380px);
+  aspect-ratio: 4 / 5;
   display: block;
   overflow: hidden;
   isolation: isolate;
