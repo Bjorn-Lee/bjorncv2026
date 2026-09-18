@@ -372,10 +372,9 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 
 .work-card {
   position: relative;
-  flex: 0 0 380px;
-  width: 380px;
-  min-width: 380px;
-  aspect-ratio: 4 / 5;
+  flex: 0 0 clamp(260px, 30vw, 380px);
+  width: clamp(260px, 30vw, 380px);
+  aspect-ratio: 5/4;
   display: block;
   overflow: hidden;
   isolation: isolate;
@@ -384,7 +383,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   transition:
     transform .4s var(--ease),
     box-shadow .4s var(--ease);
-}
+}  
 /* =========================
    IMAGE
    ========================= */
@@ -775,6 +774,8 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .profile-photo-wrap { max-width: 520px; }
   .contact-bottom { grid-template-columns: 1fr; margin-top: 5rem; }
   .contact-links { align-items: start; flex-wrap: wrap; }
+  .work-scroll {gap: 1rem;}
+  .work-card {flex-basis: 78vw;width: 78vw;}
 }
 
 @media (max-width: 480px) {
