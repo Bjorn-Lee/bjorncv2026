@@ -95,6 +95,39 @@ function initWorkCarousel() {
 
   let loopWidth = 0;
   let resetting = false;
+  
+  const reducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)"
+);
+
+const autoplaySpeed = 0.03;
+let lastTimestamp = null;
+let autoplayPaused = false;
+
+const pauseAutoplay = () => {
+  autoplayPaused = true;
+};
+
+const resumeAutoplay = () => {
+  if (!reducedMotion.matches) {
+    autoplayPaused = false;
+  }
+};
+
+const autoplay = (timestamp) => {
+  if (lastTimestamp === null) {
+    lastTimestamp = timestamp;
+  }
+
+  const elapsed = timestamp - lastTimestamp;
+  lastTimestamp = timestamp;
+
+  if (!autoplayPaused && !reducedMotion.matches) {
+    rail.scrollLeft += elapsed * autoplaySpeed;
+  }
+
+  requestAnimationFrame(autoplay);
+};
 
   const calculateLoopWidth = () => {
     if (!realCards[0] || !realCards[1]) return;
@@ -144,7 +177,11 @@ function initWorkCarousel() {
         resetting = false;
       });
     }
-  }, { passive: true });
+   }, { passive: true });
+
+  if (!reducedMotion.matches) {
+    requestAnimationFrame(autoplay);
+  }
 }
   /* =========================
      CREATE CLONES
