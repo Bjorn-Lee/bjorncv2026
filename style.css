@@ -43,7 +43,7 @@ a { -webkit-font-smoothing: antialiased; }
 
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
-img { max-width: 100%; display: block; }
+img { max-: 100%; display: block; }
 
 .zh,
 p,
@@ -350,7 +350,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   flex-wrap: nowrap;
   gap: clamp(1rem, 2vw, 2rem);
   /* 從 container 左側延伸到 viewport 右側 */
-  width: max content;
+  width: max-content;
   max-width: none;
   overflow-y: hidden;
   padding: .75rem calc(var(--pad) * 0.5) 2rem;
