@@ -278,38 +278,38 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 }
 
 /* What I do */
-.capability-grid {
+.domain-expertise-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
-.capability {
+.domain-expertise {
   position: relative;
   min-height: 420px;
   padding: clamp(1.5rem, 4vw, 3.5rem);
   border-right: 1px solid var(--line);
   transition: background .4s var(--ease), color .4s var(--ease);
 }
-.capability:last-child { border-right: 0; }
-.capability:hover { background: var(--g); color: var(--cream); }
+.domain-expertise:last-child { border-right: 0; }
+.domain-expertise:hover { background: var(--g); color: var(--cream); }
 .cap-no { color: var(--g); }
-.capability:hover .cap-no { color: rgba(245,242,233,.45); }
-.capability h3 {
+.domain-expertise:hover .cap-no { color: rgba(245,242,233,.45); }
+.domain-expertise h3 {
   margin: 5rem 0 .8rem;
   font-size: clamp(2.3rem, 5vw, 5rem);
   line-height: .9;
   letter-spacing: -.05em;
 }
 .cap-lead { font-size: 1rem; margin: 0 0 2rem; }
-.capability ul { margin: 0; padding: 0; list-style: none; }
-.capability li {
+.domain-expertise ul { margin: 0; padding: 0; list-style: none; }
+.domain-expertise li {
   padding-block: .35rem;
   color: var(--stone);
   font-size: .72rem;
   border-top: 1px solid var(--line);
 }
-.capability:hover li { color: rgba(245,242,233,.58); border-color: rgba(245,242,233,.16); }
+.domain-expertise:hover li { color: rgba(245,242,233,.58); border-color: rgba(245,242,233,.16); }
 .cap-arrow {
   position: absolute;
   right: 2rem;
@@ -593,23 +593,23 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   letter-spacing: .06em;
 }
 
-/* Capabilities */
-.capability-list { border-top: 1px solid var(--line); }
-.capability-line {
+/* domain-expertise */
+.domain-expertise-list { border-top: 1px solid var(--line); }
+.domain-expertise-line {
   display: grid;
   grid-template-columns: 180px 1fr;
   gap: 2rem;
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--line);
 }
-.capability-title {
+.domain-expertise-title {
   color: var(--g);
   font-size: .8rem;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
-.capability-line p { margin: 0; color: #514d44; font-size: .85rem; line-height: 1.6; }
+.domain-expertise-line p { margin: 0; color: #514d44; font-size: .85rem; line-height: 1.6; }
 .tools-row {
   display: grid;
   grid-template-columns: 180px 1fr;
@@ -743,9 +743,9 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .main-nav { display: none; }
   .hero-grid { grid-template-columns: 3.5rem 1fr; }
   .hero-side { display: none; }
-  .capability-grid { grid-template-columns: 1fr; }
-  .capability { min-height: 340px; border-right: 0; border-bottom: 1px solid var(--line); }
-  .capability:last-child { border-bottom: 0; }
+  .domain-expertise-grid { grid-template-columns: 1fr; }
+  .domain-expertise { min-height: 340px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .domain-expertise:last-child { border-bottom: 0; }
   .impact-grid { grid-template-columns: repeat(2, 1fr); }
   .impact-item:nth-child(2) { border-right: 0; }
   .impact-item:nth-child(3) { border-top: 1px solid var(--dark-line); }
@@ -766,7 +766,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .circle-link { width: 76px; height: 76px; }
   .experience-row { grid-template-columns: 1fr; gap: 1rem; }
   .exp-heading { flex-direction: column; gap: .6rem; }
-  .capability-line,
+  .domain-expertise-line,
   .tools-row { grid-template-columns: 1fr; gap: .5rem; }
   .coffee-grid,
   .profile-grid { grid-template-columns: 1fr; }
