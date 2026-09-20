@@ -537,8 +537,8 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 .impact-item strong {
   display: block;
   margin-bottom: 1.25rem;
-  font-size: clamp(3rem, 6vw, 6.5rem);
-  line-height: 1.25;
+  font-size: clamp(2rem, 6vw, 4rem);
+  line-height: 1;
   letter-spacing: .01em;
   font-weight: 400;
 }
