@@ -43,7 +43,7 @@ a { -webkit-font-smoothing: antialiased; }
 
 a { color: inherit; text-decoration: none; }
 button { font: inherit; }
-img { max-: 100%; display: block; }
+img { max-width: 100%; display: block; }
 
 .zh,
 p,
@@ -93,7 +93,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 }
 
 .section-intro h2,
-.statement h2,
 .contact h2 {
   max-width: 1050px;
   margin: 0;
@@ -104,7 +103,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 }
 
 .section-intro h2 em,
-.statement h2 em,
 .contact h2 em {
   font-style: normal;
   font-weight: 300;
@@ -318,28 +316,13 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   opacity: .35;
 }
 
-/* Statement */
-.statement { padding-block: clamp(6rem, 13vw, 13rem); }
-.statement-grid {
-  display: grid;
-  grid-template-columns: 5rem 1fr;
-  gap: clamp(1rem, 4vw, 4rem);
-}
-.statement-body {
-  max-width: 680px;
-  margin: 5rem 0 0;
-  color: rgba(245,242,233,.62);
-  font-size: clamp(1rem, 1.6vw, 1.35rem);
-  line-height: 1.8;
-}
-
 /* Work */
 /* =========================
    WORK — HORIZONTAL RAIL
    ========================= */
 .work-window {
-  width: 100vw
-    margin-left: calc(50%-50vw)
+  width: 100vw;
+    margin-left: calc(50% - 50vw)
   overflow: hidden;
 }
 
@@ -593,77 +576,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   letter-spacing: .06em;
 }
 
-/* domain-expertise */
-.domain-expertise-list { border-top: 1px solid var(--line); }
-.domain-expertise-line {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 2rem;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid var(--line);
-}
-.domain-expertise-title {
-  color: var(--g);
-  font-size: .8rem;
-  font-weight: 700;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-.domain-expertise-line p { margin: 0; color: #514d44; font-size: .85rem; line-height: 1.6; }
-.tools-row {
-  display: grid;
-  grid-template-columns: 180px 1fr;
-  gap: 2rem;
-  padding-top: 2rem;
-  color: var(--stone);
-}
-.tools-row p { margin: 0; font-size: .72rem; }
-
-/* Process */
-.process-section { padding-block: clamp(6rem, 11vw, 11rem); }
-.process-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-top: 1px solid var(--dark-line);
-}
-.process-grid article {
-  min-height: 300px;
-  padding: 2rem 1.5rem;
-  border-right: 1px solid var(--dark-line);
-}
-.process-grid article:last-child { border-right: 0; }
-.process-grid article > span { color: rgba(245,242,233,.38); }
-.process-grid h3 {
-  margin: 5rem 0 1rem;
-  font-size: 1rem;
-  letter-spacing: .05em;
-}
-.process-grid p { max-width: 210px; margin: 0; color: rgba(245,242,233,.55); font-size: .75rem; line-height: 1.7; }
-
-/* Coffee */
-.coffee-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: clamp(3rem, 10vw, 10rem);
-}
-.coffee-title h2 {
-  margin: 0;
-  font-size: clamp(4rem, 9vw, 9rem);
-  line-height: .82;
-  letter-spacing: -.065em;
-}
-.coffee-title h2 em { font-style: normal; font-weight: 300; }
-.coffee-copy { padding-top: 4rem; }
-.coffee-lead { font-size: clamp(1.3rem, 2.5vw, 2rem); line-height: 1.35; margin: 0 0 2rem; }
-.coffee-copy > p:not(.coffee-lead) { max-width: 580px; color: #625d52; font-size: .85rem; line-height: 1.9; }
-.coffee-tags { display: flex; flex-wrap: wrap; gap: .45rem; margin-top: 2.5rem; }
-.coffee-tags span {
-  padding: .4rem .7rem;
-  background: var(--cream2);
-  color: var(--g);
-  font-size: .62rem;
-}
-
 /* Profile */
 .profile-grid {
   display: grid;
@@ -758,7 +670,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 
 @media (max-width: 680px) {
   .section-intro,
-  .statement-grid { grid-template-columns: 1fr; gap: 1.5rem; }
   .section-no { min-width: auto; }
   .hero-grid { grid-template-columns: 1fr; padding-block: 6rem 5rem; }
   .hero-index { margin-bottom: 1rem; }
@@ -766,7 +677,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .circle-link { width: 76px; height: 76px; }
   .experience-row { grid-template-columns: 1fr; gap: 1rem; }
   .exp-heading { flex-direction: column; gap: .6rem; }
-  .domain-expertise-line,
   .tools-row { grid-template-columns: 1fr; gap: .5rem; }
   .coffee-grid,
   .profile-grid { grid-template-columns: 1fr; }
@@ -785,7 +695,6 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .hero-copy h1 { font-size: clamp(3rem, 14vw, 5rem); }
   .section { padding-block: 5rem; }
   .section-intro h2,
-  .statement h2,
   .contact h2 { font-size: clamp(2.7rem, 12vw, 4.5rem); }
   .impact-grid { grid-template-columns: 1fr; }
   .impact-item,
