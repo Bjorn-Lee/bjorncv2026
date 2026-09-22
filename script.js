@@ -91,19 +91,21 @@ document.addEventListener("DOMContentLoaded", () => {
   /* =========================
      WORK — INFINITE CAROUSEL
      ========================= */
-
 function initWorkCarousel() {
   const viewport = document.querySelector(".work-window");
   const track = document.querySelector(".work-scroll");
 
   if (!viewport || !track) return;
 
-  const cards = Array.from(track.querySelectorAll(".work-card"));
+  const originalCards = Array.from(track.querySelectorAll(".work-card"));
 
-  if (cards.length < 2) return;
+  if (originalCards.length < 2) return;
 
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
-  const SPEED = 0.03;
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  const SPEED = 30;
   const DRAG_THRESHOLD = 6;
 
   let loopWidth = 0;
@@ -111,39 +113,77 @@ function initWorkCarousel() {
   let dragMoved = false;
   let startX = 0;
   let startScrollLeft = 0;
+  let animationFrame = null;
+  let lastTime = null;
+  let paused = reducedMotion.matches;
 
-  const before = document.createDocumentFragment();
-  const after = document.createDocumentFragment();
+  const beforeFragment = document.createDocumentFragment();
+  const afterFragment = document.createDocumentFragment();
 
-  cards.forEach((card) => {
+  originalCards.forEach((card) => {
     const beforeClone = card.cloneNode(true);
+
     beforeClone.dataset.clone = "before";
     beforeClone.setAttribute("aria-hidden", "true");
     beforeClone.tabIndex = -1;
-    before.appendChild(beforeClone);
+
+    beforeFragment.appendChild(beforeClone);
 
     const afterClone = card.cloneNode(true);
+
     afterClone.dataset.clone = "after";
     afterClone.setAttribute("aria-hidden", "true");
     afterClone.tabIndex = -1;
-    after.appendChild(afterClone);
+
+    afterFragment.appendChild(afterClone);
   });
 
-  track.insertBefore(before, cards[0]);
-  track.appendChild(after);
+  track.insertBefore(beforeFragment, originalCards[0]);
+  track.appendChild(afterFragment);
 
   const realCards = Array.from(
     track.querySelectorAll(".work-card:not([data-clone])")
   );
 
   const calculateLoopWidth = () => {
-    if (realCards.length < 2) return;
+    if (realCards.length === 0) return;
 
-    const first = realCards[0];
-    const second = realCards[1];
-    const step = second.offsetLeft - first.offsetLeft;
+    const firstCard = realCards[0];
+    const lastCard = realCards[realCards.length - 1];
 
-    loopWidth = step * realCards.length;
+    const firstLeft = firstCard.offsetLeft;
+    const lastRight =
+      lastCard.offsetLeft + lastCard.offsetWidth;
+
+    loopWidth = lastRight - firstLeft;
+
+    if (realCards.length > 1) {
+      const computedStyle = window.getComputedStyle(track);
+      const gap = parseFloat(computedStyle.columnGap) || 0;
+
+      loopWidth += gap;
+    }
+  };
+
+  const getOriginalStart = () => {
+    if (!realCards[0]) return 0;
+
+    return realCards[0].offsetLeft;
+  };
+
+  const normalizeScrollPosition = () => {
+    if (!loopWidth) return;
+
+    const start = getOriginalStart();
+    const end = start + loopWidth;
+
+    while (viewport.scrollLeft >= end) {
+      viewport.scrollLeft -= loopWidth;
+    }
+
+    while (viewport.scrollLeft < start) {
+      viewport.scrollLeft += loopWidth;
+    }
   };
 
   const setInitialPosition = () => {
@@ -151,30 +191,8 @@ function initWorkCarousel() {
 
     if (!loopWidth) return;
 
-    viewport.scrollLeft = realCards[0].offsetLeft;
+    viewport.scrollLeft = getOriginalStart();
   };
-
-  const checkLoop = () => {
-    if (!loopWidth) return;
-
-    const start = realCards[0].offsetLeft;
-    const current = viewport.scrollLeft;
-
-    if (current >= start + loopWidth) {
-      viewport.scrollLeft = current - loopWidth;
-      return;
-    }
-
-    if (current < start) {
-      viewport.scrollLeft = current + loopWidth;
-    }
-  };
-
-  viewport.addEventListener("scroll", checkLoop, { passive: true });
-
-  let animationFrame = null;
-  let lastTime = null;
-  let paused = reducedMotion.matches;
 
   const animate = (time) => {
     if (lastTime === null) {
@@ -182,10 +200,17 @@ function initWorkCarousel() {
     }
 
     const delta = time - lastTime;
+
     lastTime = time;
 
-    if (!paused && !reducedMotion.matches && !isDragging) {
-      viewport.scrollLeft += delta * SPEED;
+    if (
+      !paused &&
+      !reducedMotion.matches &&
+      !isDragging
+    ) {
+      viewport.scrollLeft += (SPEED * delta) / 1000;
+
+      normalizeScrollPosition();
     }
 
     animationFrame = requestAnimationFrame(animate);
@@ -203,25 +228,35 @@ function initWorkCarousel() {
   };
 
   const resumeAnimation = () => {
-    if (!reducedMotion.matches) {
-      paused = false;
-      lastTime = null;
-    }
+    if (reducedMotion.matches) return;
+
+    paused = false;
+    lastTime = null;
   };
 
-  viewport.addEventListener("mouseenter", pauseAnimation);
-  viewport.addEventListener("mouseleave", resumeAnimation);
+  viewport.addEventListener(
+    "scroll",
+    normalizeScrollPosition,
+    { passive: true }
+  );
 
   viewport.addEventListener(
     "wheel",
     (event) => {
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      if (
+        Math.abs(event.deltaY) <=
+        Math.abs(event.deltaX)
+      ) {
+        return;
+      }
 
       event.preventDefault();
+
       pauseAnimation();
 
       viewport.scrollLeft += event.deltaY;
-      checkLoop();
+
+      normalizeScrollPosition();
 
       clearTimeout(viewport._wheelTimer);
 
@@ -234,43 +269,76 @@ function initWorkCarousel() {
 
   viewport.style.touchAction = "pan-y";
 
-  viewport.addEventListener("pointerdown", (event) => {
-    if (event.pointerType === "mouse" && event.button !== 0) return;
+  viewport.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (
+        event.pointerType === "mouse" &&
+        event.button !== 0
+      ) {
+        return;
+      }
 
-    isDragging = true;
-    dragMoved = false;
-    startX = event.clientX;
-    startScrollLeft = viewport.scrollLeft;
+      isDragging = true;
+      dragMoved = false;
 
-    pauseAnimation();
-    viewport.classList.add("is-dragging");
-    viewport.setPointerCapture(event.pointerId);
-  });
+      startX = event.clientX;
+      startScrollLeft = viewport.scrollLeft;
 
-  viewport.addEventListener("pointermove", (event) => {
-    if (!isDragging) return;
+      pauseAnimation();
 
-    const distance = event.clientX - startX;
+      viewport.classList.add("is-dragging");
 
-    if (Math.abs(distance) > DRAG_THRESHOLD) {
-      dragMoved = true;
+      viewport.setPointerCapture(
+        event.pointerId
+      );
     }
+  );
 
-    viewport.scrollLeft = startScrollLeft - distance;
-    checkLoop();
-  });
+  viewport.addEventListener(
+    "pointermove",
+    (event) => {
+      if (!isDragging) return;
+
+      const distance =
+        event.clientX - startX;
+
+      if (
+        Math.abs(distance) >
+        DRAG_THRESHOLD
+      ) {
+        dragMoved = true;
+      }
+
+      viewport.scrollLeft =
+        startScrollLeft - distance;
+
+      normalizeScrollPosition();
+    }
+  );
 
   const endDrag = (event) => {
     if (!isDragging) return;
 
     isDragging = false;
-    viewport.classList.remove("is-dragging");
 
-    if (event && viewport.hasPointerCapture(event.pointerId)) {
-      viewport.releasePointerCapture(event.pointerId);
+    viewport.classList.remove(
+      "is-dragging"
+    );
+
+    if (
+      event &&
+      viewport.hasPointerCapture(
+        event.pointerId
+      )
+    ) {
+      viewport.releasePointerCapture(
+        event.pointerId
+      );
     }
 
-    checkLoop();
+    normalizeScrollPosition();
+
     resumeAnimation();
 
     if (dragMoved) {
@@ -282,37 +350,56 @@ function initWorkCarousel() {
     }
   };
 
-  viewport.addEventListener("pointerup", endDrag);
-  viewport.addEventListener("pointercancel", endDrag);
+  viewport.addEventListener(
+    "pointerup",
+    endDrag
+  );
+
+  viewport.addEventListener(
+    "pointercancel",
+    endDrag
+  );
 
   viewport.addEventListener(
     "click",
     (event) => {
-      if (viewport.dataset.dragged === "true") {
+      if (
+        viewport.dataset.dragged ===
+        "true"
+      ) {
         event.preventDefault();
         event.stopPropagation();
+
         delete viewport.dataset.dragged;
       }
     },
     true
   );
 
-  track.querySelectorAll("img").forEach((img) => {
-    img.addEventListener("dragstart", (event) => {
-      event.preventDefault();
+  track
+    .querySelectorAll("img")
+    .forEach((img) => {
+      img.addEventListener(
+        "dragstart",
+        (event) => {
+          event.preventDefault();
+        }
+      );
     });
-  });
 
   let resizeTimer = null;
 
-  window.addEventListener("resize", () => {
-    clearTimeout(resizeTimer);
+  window.addEventListener(
+    "resize",
+    () => {
+      clearTimeout(resizeTimer);
 
-    resizeTimer = setTimeout(() => {
-      calculateLoopWidth();
-      checkLoop();
-    }, 150);
-  });
+      resizeTimer = setTimeout(() => {
+        calculateLoopWidth();
+        normalizeScrollPosition();
+      }, 150);
+    }
+  );
 
   const updateMotion = () => {
     if (reducedMotion.matches) {
@@ -322,8 +409,14 @@ function initWorkCarousel() {
     }
   };
 
-  if (typeof reducedMotion.addEventListener === "function") {
-    reducedMotion.addEventListener("change", updateMotion);
+  if (
+    typeof reducedMotion.addEventListener ===
+    "function"
+  ) {
+    reducedMotion.addEventListener(
+      "change",
+      updateMotion
+    );
   }
 
   requestAnimationFrame(() => {
