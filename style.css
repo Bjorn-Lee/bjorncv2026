@@ -322,7 +322,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
    ========================= */
 .work-window {
   width: 100vw;
-    margin-left: calc(50% - 50vw)
+    margin-left: calc(50% - 50vw);
   overflow: hidden;
 }
 
