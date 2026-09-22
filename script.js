@@ -1,571 +1,594 @@
-/* BJORN LEE — Interaction layer / V1 */
+/* BJORN LEE — Interaction layer / V2 */
 
 document.addEventListener("DOMContentLoaded", () => {
+  /* =========================
+     GLOBAL
+     ========================= */
+
   const header = document.querySelector("#site-header");
+  const year = document.querySelector("#year");
+
+  if (year) {
+    year.textContent = new Date().getFullYear();
+  }
+
+
+  /* =========================
+     REVEAL
+     ========================= */
+
   const revealItems = document.querySelectorAll(
-    ".section-intro,  .work-card, .impact-item, .experience-row, .profile-photo-wrap, .profile-details, .contact-main, .contact-bottom"
+    ".section-intro, .work-card, .impact-item, .experience-row, .profile-photo-wrap, .profile-details, .contact-main, .contact-bottom"
   );
 
-  // Year
-  const year = document.querySelector("#year");
-  if (year) year.textContent = new Date().getFullYear();
+  revealItems.forEach((item) => {
+    item.classList.add("reveal");
+  });
 
-  // Add reveal class
-  revealItems.forEach((item) => item.classList.add("reveal"));
-
-  // Intersection Observer
   if ("IntersectionObserver" in window) {
-    const observer = new IntersectionObserver((entries, obs) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add("is-visible");
-        obs.unobserve(entry.target);
-      });
-    }, {
-      threshold: 0.12,
-      rootMargin: "0px 0px -50px 0px"
+    const observer = new IntersectionObserver(
+      (entries, obs) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+
+          entry.target.classList.add("is-visible");
+          obs.unobserve(entry.target);
+        });
+      },
+      {
+        threshold: 0.12,
+        rootMargin: "0px 0px -50px 0px"
+      }
+    );
+
+    revealItems.forEach((item) => {
+      observer.observe(item);
+    });
+  } else {
+    revealItems.forEach((item) => {
+      item.classList.add("is-visible");
+    });
+  }
+
+
+  /* =========================
+     HEADER
+     ========================= */
+
+  if (header) {
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+
+    const updateHeader = () => {
+      const currentY = window.scrollY;
+
+      if (currentY > 120 && currentY > lastScrollY + 8) {
+        header.style.transform = "translateY(-100%)";
+      } else if (
+        currentY < lastScrollY - 8 ||
+        currentY < 80
+      ) {
+        header.style.transform = "translateY(0)";
+      }
+
+      lastScrollY = currentY;
+      ticking = false;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          window.requestAnimationFrame(updateHeader);
+          ticking = true;
+        }
+      },
+      { passive: true }
+    );
+  }
+
+
+  /* =========================
+     WORK — INFINITE CAROUSEL
+     ========================= */
+
+  initWorkCarousel();
+
+
+  function initWorkCarousel() {
+    const viewport = document.querySelector(".work-window");
+    const track = document.querySelector(".work-scroll");
+
+    if (!viewport || !track) return;
+
+    const originalCards = Array.from(
+      track.querySelectorAll(".work-card")
+    );
+
+    if (originalCards.length < 2) return;
+
+
+    /* =========================
+       SETTINGS
+       ========================= */
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)"
+    );
+
+    const AUTOPLAY_SPEED = 0.03;
+    const DRAG_THRESHOLD = 6;
+
+
+    /* =========================
+       STATE
+       ========================= */
+
+    let loopWidth = 0;
+    let isResetting = false;
+
+    let autoplayFrame = null;
+    let lastTimestamp = null;
+    let autoplayPaused = reducedMotion.matches;
+
+    let isDragging = false;
+    let dragMoved = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+
+
+    /* =========================
+       CREATE CLONES
+       ========================= */
+
+    const beforeFragment =
+      document.createDocumentFragment();
+
+    const afterFragment =
+      document.createDocumentFragment();
+
+    originalCards.forEach((card) => {
+      const beforeClone = card.cloneNode(true);
+
+      beforeClone.dataset.clone = "before";
+      beforeClone.setAttribute("aria-hidden", "true");
+      beforeClone.tabIndex = -1;
+
+      beforeFragment.appendChild(beforeClone);
+
+
+      const afterClone = card.cloneNode(true);
+
+      afterClone.dataset.clone = "after";
+      afterClone.setAttribute("aria-hidden", "true");
+      afterClone.tabIndex = -1;
+
+      afterFragment.appendChild(afterClone);
     });
 
-    revealItems.forEach((item) => observer.observe(item));
-  } else {
-    revealItems.forEach((item) => item.classList.add("is-visible"));
-  }
+    track.insertBefore(
+      beforeFragment,
+      originalCards[0]
+    );
 
-  // Header hides when scrolling down, returns when scrolling up.
-  let lastScrollY = window.scrollY;
-  let ticking = false;
-
-  const updateHeader = () => {
-    const currentY = window.scrollY;
-    if (currentY > 120 && currentY > lastScrollY + 8) {
-      header.style.transform = "translateY(-100%)";
-    } else if (currentY < lastScrollY - 8 || currentY < 80) {
-      header.style.transform = "translateY(0)";
-    }
-    lastScrollY = currentY;
-    ticking = false;
-  };
-
-  window.addEventListener("scroll", () => {
-    if (!ticking) {
-      window.requestAnimationFrame(updateHeader);
-      ticking = true;
-    }
-  }, { passive: true });
-initWorkCarousel();
+    track.appendChild(afterFragment);
 
 
+    /* =========================
+       GET REAL CARDS
+       ========================= */
 
-/* =========================
-   WORK — INFINITE CAROUSEL
-   ========================= */
-function initWorkCarousel() {
-  const rail = document.querySelector(".work-window");
-  const track = document.querySelector(".work-scroll");
-
-  if (!rail || !track) return;
-
-  const cards = Array.from(track.querySelectorAll(".work-card"));
-
-  if (cards.length < 2) return;
-
-  const beforeFragment = document.createDocumentFragment();
-  const afterFragment = document.createDocumentFragment();
-
-  cards.forEach((card) => {
-    const beforeClone = card.cloneNode(true);
-    beforeClone.dataset.clone = "before";
-    beforeClone.setAttribute("aria-hidden", "true");
-    beforeClone.tabIndex = -1;
-    beforeFragment.appendChild(beforeClone);
-
-    const afterClone = card.cloneNode(true);
-    afterClone.dataset.clone = "after";
-    afterClone.setAttribute("aria-hidden", "true");
-    afterClone.tabIndex = -1;
-    afterFragment.appendChild(afterClone);
-  });
-
-  track.insertBefore(beforeFragment, cards[0]);
-  track.appendChild(afterFragment);
-
-  const realCards = Array.from(
-    track.querySelectorAll('.work-card:not([data-clone])')
-  );
-
-  let loopWidth = 0;
-  let resetting = false;
-  
-  const reducedMotion = window.matchMedia(
-  "(prefers-reduced-motion: reduce)"
-);
-
-const autoplaySpeed = 0.03;
-let lastTimestamp = null;
-let autoplayPaused = false;
-
-const pauseAutoplay = () => {
-  autoplayPaused = true;
-};
-
-const resumeAutoplay = () => {
-  if (!reducedMotion.matches) {
-    autoplayPaused = false;
-  }
-};
-
-const autoplay = (timestamp) => {
-  if (lastTimestamp === null) {
-    lastTimestamp = timestamp;
-  }
-
-  const elapsed = timestamp - lastTimestamp;
-  lastTimestamp = timestamp;
-
-  if (!autoplayPaused && !reducedMotion.matches) {
-    rail.scrollLeft += elapsed * autoplaySpeed;
-  }
-
-  requestAnimationFrame(autoplay);
-};
-
-  const calculateLoopWidth = () => {
-    if (!realCards[0] || !realCards[1]) return;
-
-    const cardStep =
-      realCards[1].offsetLeft - realCards[0].offsetLeft;
-
-    loopWidth = cardStep * realCards.length;
-  };
-
-  const setInitialPosition = () => {
-    calculateLoopWidth();
-
-    if (!loopWidth) return;
-
-    rail.scrollLeft = realCards[0].offsetLeft;
-  };
-
-  requestAnimationFrame(() => {
-    requestAnimationFrame(setInitialPosition);
-  });
-
-  window.addEventListener("load", setInitialPosition);
-
-  window.addEventListener("resize", () => {
-    calculateLoopWidth();
-  });
-
-  rail.addEventListener("scroll", () => {
-    if (!loopWidth || resetting) return;
-
-    const start = realCards[0].offsetLeft;
-    const current = rail.scrollLeft;
-
-    if (current >= start + loopWidth) {
-      resetting = true;
-      rail.scrollLeft = current - loopWidth;
-
-      requestAnimationFrame(() => {
-        resetting = false;
-      });
-    } else if (current < start) {
-      resetting = true;
-      rail.scrollLeft = current + loopWidth;
-
-      requestAnimationFrame(() => {
-        resetting = false;
-      });
-    }
-   }, { passive: true });
-
-  if (!reducedMotion.matches) {
-    requestAnimationFrame(autoplay);
-  }
-}
-  /* =========================
-     CREATE CLONES
-     ========================= */
-
-  /*
-   * We create:
-   *
-   * [clone][clone][clone][clone]
-   * [real ][real ][real ][real ]
-   * [clone][clone][clone][clone]
-   *
-   * This gives us room to move
-   * in both directions.
-   */
-
-  const beforeFragment =
-    document.createDocumentFragment();
-
-  const afterFragment =
-    document.createDocumentFragment();
-
-
-cards.forEach((card) => {
-  const beforeClone = card.cloneNode(true);
-  beforeClone.dataset.clone = "before";
-  beforeClone.setAttribute("aria-hidden", "true");
-  beforeClone.tabIndex = -1;
-  beforeFragment.appendChild(beforeClone);
-
-  const afterClone = card.cloneNode(true);
-  afterClone.dataset.clone = "after";
-  afterClone.setAttribute("aria-hidden", "true");
-  afterClone.tabIndex = -1;
-  afterFragment.appendChild(afterClone);
-});
-
-  /* =========================
-     GET REAL CARDS
-     ========================= */
-
-  const realCards =
-    Array.from(
-      rail.querySelectorAll(
-        '.work-card:not([data-clone])'
+    const realCards = Array.from(
+      track.querySelectorAll(
+        ".work-card:not([data-clone])"
       )
     );
 
 
-  /* =========================
-     CALCULATE LOOP WIDTH
-     ========================= */
+    /* =========================
+       MEASURE LOOP
+       ========================= */
 
-  let loopWidth = 0;
+    const calculateLoopWidth = () => {
+      if (realCards.length < 2) return;
 
+      const firstCard = realCards[0];
+      const secondCard = realCards[1];
 
-  const calculateLoopWidth = () => {
+      const cardStep =
+        secondCard.offsetLeft -
+        firstCard.offsetLeft;
 
-    if (
-      !realCards[0] ||
-      !realCards[1]
-    ) return;
-
-
-    /*
-     * Distance between the first
-     * and second real card.
-     */
-
-    const cardStep =
-      realCards[1].offsetLeft -
-      realCards[0].offsetLeft;
+      loopWidth =
+        cardStep * realCards.length;
+    };
 
 
-    /*
-     * 4 cards × card step
-     */
+    /* =========================
+       INITIAL POSITION
+       ========================= */
 
-    loopWidth =
-      cardStep * realCards.length;
-
-  };
-
-
-  /* =========================
-     INITIAL POSITION
-     ========================= */
-
-  const setInitialPosition = () => {
-
-    calculateLoopWidth();
-
-    if (!loopWidth) return;
-
-
-    /*
-     * Start at the REAL first card,
-     * not the beginning of the clones.
-     */
-
-    rail.scrollLeft =
-      realCards[0].offsetLeft;
-
-  };
-
-
-  /*
-   * Wait until layout is ready.
-   */
-
-  requestAnimationFrame(() => {
-
-    requestAnimationFrame(() => {
-
-      setInitialPosition();
-
-    });
-
-  });
-
-
-  window.addEventListener(
-    "load",
-    setInitialPosition
-  );
-
-
-  window.addEventListener(
-    "resize",
-    () => {
-
+    const setInitialPosition = () => {
       calculateLoopWidth();
 
-    }
-  );
+      if (!loopWidth || !realCards[0]) return;
+
+      viewport.scrollLeft =
+        realCards[0].offsetLeft;
+    };
 
 
-  /* =========================
-     INFINITE LOOP
-     ========================= */
+    /* =========================
+       INFINITE LOOP
+       ========================= */
 
-  let resetting = false;
-
-
-  rail.addEventListener(
-    "scroll",
-    () => {
-
-      if (
-        !loopWidth ||
-        resetting
-      ) return;
-
-
-      const firstReal =
-        realCards[0];
-
-
-      if (!firstReal) return;
-
+    const handleLoop = () => {
+      if (!loopWidth || isResetting) return;
 
       const start =
-        firstReal.offsetLeft;
-
+        realCards[0].offsetLeft;
 
       const current =
-        rail.scrollLeft;
+        viewport.scrollLeft;
 
 
-      /*
-       * TOO FAR RIGHT
-       *
-       * 01 02 03 04
-       *          ↓
-       *          01 02 03 04
-       */
+      /* Move from AFTER clones
+         back to REAL cards */
 
-      if (
-        current >=
-        start + loopWidth
-      ) {
+      if (current >= start + loopWidth) {
+        isResetting = true;
 
-        resetting = true;
-
-
-        rail.scrollLeft =
+        viewport.scrollLeft =
           current - loopWidth;
 
-
         requestAnimationFrame(() => {
-
-          resetting = false;
-
+          isResetting = false;
         });
 
+        return;
       }
 
 
-      /*
-       * TOO FAR LEFT
-       *
-       * clone 01 02 03 04
-       *        ↓
-       *        real 01
-       */
+      /* Move from BEFORE clones
+         back to REAL cards */
 
-      else if (
-        current <
-        start
-      ) {
+      if (current < start) {
+        isResetting = true;
 
-        resetting = true;
-
-
-        rail.scrollLeft =
+        viewport.scrollLeft =
           current + loopWidth;
 
-
         requestAnimationFrame(() => {
-
-          resetting = false;
-
+          isResetting = false;
         });
+      }
+    };
 
+
+    viewport.addEventListener(
+      "scroll",
+      handleLoop,
+      { passive: true }
+    );
+
+
+    /* =========================
+       AUTOPLAY
+       ========================= */
+
+    const stopAutoplay = () => {
+      autoplayPaused = true;
+    };
+
+
+    const resumeAutoplay = () => {
+      if (!reducedMotion.matches) {
+        autoplayPaused = false;
+      }
+    };
+
+
+    const autoplay = (timestamp) => {
+      if (lastTimestamp === null) {
+        lastTimestamp = timestamp;
       }
 
-    },
-    {
-      passive: true
-    }
-  );
+      const elapsed =
+        timestamp - lastTimestamp;
 
+      lastTimestamp = timestamp;
 
-  /* =========================
-     MOUSE WHEEL
-     ========================= */
-
-  rail.addEventListener(
-    "wheel",
-    event => {
-
-      /*
-       * Convert vertical mouse wheel
-       * into horizontal movement.
-       */
 
       if (
-        Math.abs(event.deltaY) >
-        Math.abs(event.deltaX)
+        !autoplayPaused &&
+        !reducedMotion.matches &&
+        !isDragging
       ) {
+        viewport.scrollLeft +=
+          elapsed * AUTOPLAY_SPEED;
+      }
+
+      autoplayFrame =
+        requestAnimationFrame(autoplay);
+    };
+
+
+    const startAutoplay = () => {
+      if (autoplayFrame) return;
+
+      lastTimestamp = null;
+
+      autoplayFrame =
+        requestAnimationFrame(autoplay);
+    };
+
+
+    /* Pause while hovering */
+
+    viewport.addEventListener(
+      "mouseenter",
+      stopAutoplay
+    );
+
+    viewport.addEventListener(
+      "mouseleave",
+      resumeAutoplay
+    );
+
+
+    /* =========================
+       MOUSE WHEEL
+       ========================= */
+
+    viewport.addEventListener(
+      "wheel",
+      (event) => {
+        const isVerticalWheel =
+          Math.abs(event.deltaY) >
+          Math.abs(event.deltaX);
+
+        if (!isVerticalWheel) return;
 
         event.preventDefault();
 
-        rail.scrollLeft +=
+        stopAutoplay();
+
+        viewport.scrollLeft +=
           event.deltaY;
 
+        window.clearTimeout(
+          viewport._wheelResumeTimer
+        );
+
+        viewport._wheelResumeTimer =
+          window.setTimeout(() => {
+            resumeAutoplay();
+          }, 250);
+      },
+      {
+        passive: false
       }
-
-    },
-    {
-      passive: false
-    }
-  );
+    );
 
 
-  /* =========================
-     MOUSE DRAG
-     ========================= */
+    /* =========================
+       POINTER DRAG / SWIPE
+       ========================= */
 
-  let isDragging = false;
-
-  let startX = 0;
-
-  let startScrollLeft = 0;
+    viewport.style.touchAction = "pan-y";
 
 
-  rail.addEventListener(
-    "pointerdown",
-    event => {
+    viewport.addEventListener(
+      "pointerdown",
+      (event) => {
+        if (
+          event.pointerType === "mouse" &&
+          event.button !== 0
+        ) {
+          return;
+        }
 
-      /*
-       * Let mobile use native
-       * touch scrolling.
-       */
+        isDragging = true;
+        dragMoved = false;
 
-      if (
-        event.pointerType === "touch"
-      ) return;
+        startX = event.clientX;
+        startScrollLeft =
+          viewport.scrollLeft;
+
+        stopAutoplay();
+
+        viewport.classList.add(
+          "is-dragging"
+        );
+
+        viewport.setPointerCapture(
+          event.pointerId
+        );
+      }
+    );
 
 
-      isDragging = true;
+    viewport.addEventListener(
+      "pointermove",
+      (event) => {
+        if (!isDragging) return;
+
+        const distance =
+          event.clientX - startX;
 
 
-      startX =
-        event.clientX;
+        if (
+          Math.abs(distance) >
+          DRAG_THRESHOLD
+        ) {
+          dragMoved = true;
+        }
 
 
-      startScrollLeft =
-        rail.scrollLeft;
+        viewport.scrollLeft =
+          startScrollLeft - distance;
+      }
+    );
 
 
-      rail.classList.add(
+    const stopDragging = (event) => {
+      if (!isDragging) return;
+
+      isDragging = false;
+
+      viewport.classList.remove(
         "is-dragging"
       );
 
 
-      rail.setPointerCapture(
-        event.pointerId
-      );
-
-    }
-  );
-
-
-  rail.addEventListener(
-    "pointermove",
-    event => {
-
-      if (!isDragging) return;
+      if (
+        event &&
+        viewport.hasPointerCapture(
+          event.pointerId
+        )
+      ) {
+        viewport.releasePointerCapture(
+          event.pointerId
+        );
+      }
 
 
-      const distance =
-        event.clientX -
-        startX;
+      resumeAutoplay();
 
 
-      rail.scrollLeft =
-        startScrollLeft -
-        distance;
+      /* Prevent the click generated
+         immediately after dragging */
 
-    }
-  );
+      if (dragMoved) {
+        viewport.dataset.dragged = "true";
 
-
-  const stopDragging = () => {
-
-    if (!isDragging) return;
-
-
-    isDragging = false;
+        window.setTimeout(() => {
+          delete viewport.dataset.dragged;
+        }, 0);
+      }
+    };
 
 
-    rail.classList.remove(
-      "is-dragging"
+    viewport.addEventListener(
+      "pointerup",
+      stopDragging
     );
 
-  };
+    viewport.addEventListener(
+      "pointercancel",
+      stopDragging
+    );
+
+    viewport.addEventListener(
+      "lostpointercapture",
+      () => {
+        if (!isDragging) return;
+
+        isDragging = false;
+
+        viewport.classList.remove(
+          "is-dragging"
+        );
+
+        resumeAutoplay();
+      }
+    );
 
 
-  rail.addEventListener(
-    "pointerup",
-    stopDragging
-  );
+    /* =========================
+       PREVENT CLICK AFTER DRAG
+       ========================= */
 
-
-  rail.addEventListener(
-    "pointercancel",
-    stopDragging
-  );
-
-
-  rail.addEventListener(
-    "lostpointercapture",
-    stopDragging
-  );
-
-
-  /* =========================
-     PREVENT IMAGE DRAG
-     ========================= */
-
-  rail
-    .querySelectorAll("img")
-    .forEach(img => {
-
-      img.addEventListener(
-        "dragstart",
-        event => {
-
+    viewport.addEventListener(
+      "click",
+      (event) => {
+        if (
+          viewport.dataset.dragged === "true"
+        ) {
           event.preventDefault();
+          event.stopPropagation();
 
+          delete viewport.dataset.dragged;
         }
+      },
+      true
+    );
+
+
+    /* =========================
+       PREVENT IMAGE DRAG
+       ========================= */
+
+    track
+      .querySelectorAll("img")
+      .forEach((img) => {
+        img.addEventListener(
+          "dragstart",
+          (event) => {
+            event.preventDefault();
+          }
+        );
+      });
+
+
+    /* =========================
+       RESIZE
+       ========================= */
+
+    let resizeTimer = null;
+
+    window.addEventListener(
+      "resize",
+      () => {
+        window.clearTimeout(
+          resizeTimer
+        );
+
+        resizeTimer =
+          window.setTimeout(() => {
+            calculateLoopWidth();
+            handleLoop();
+          }, 150);
+      }
+    );
+
+
+    /* =========================
+       REDUCED MOTION
+       ========================= */
+
+    const handleMotionPreference = () => {
+      if (reducedMotion.matches) {
+        stopAutoplay();
+      } else {
+        resumeAutoplay();
+      }
+    };
+
+
+    if (
+      typeof reducedMotion.addEventListener ===
+      "function"
+    ) {
+      reducedMotion.addEventListener(
+        "change",
+        handleMotionPreference
       );
+    }
 
+
+    /* =========================
+       INITIALIZE
+       ========================= */
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setInitialPosition();
+
+        if (!reducedMotion.matches) {
+          startAutoplay();
+        }
+      });
     });
-
+  }
 });
