@@ -217,43 +217,46 @@ function initWorkCarousel() {
   /*
    * INFINITE LOOP
    */
+const handleLoop = () => {
+  if (!loopWidth) return;
 
-  const handleLoop = () => {
-    if (!loopWidth) return;
+  const start =
+    realCards[0].offsetLeft;
 
-    const start =
-      realCards[0].offsetLeft;
+  const current =
+    viewport.scrollLeft;
 
-    const current =
-      viewport.scrollLeft;
+  const maxScroll =
+    viewport.scrollWidth -
+    viewport.clientWidth;
 
-    /*
-     * Passed original 01-04
-     * → move back by exactly one set
-     */
+  /*
+   * Reached the right side
+   * → jump back one complete set
+   */
 
-    if (
-      current >=
-      start + loopWidth
-    ) {
-      viewport.scrollLeft =
-        current - loopWidth;
+  if (
+    current >=
+    maxScroll - 2
+  ) {
+    viewport.scrollLeft =
+      current - loopWidth;
 
-      return;
-    }
+    return;
+  }
 
-    /*
-     * Dragged into the left clone area
-     * → move forward by exactly one set
-     */
+  /*
+   * Entered the left clone area
+   * → jump forward one complete set
+   */
 
-    if (
-      current < start
-    ) {
-      viewport.scrollLeft =
-        current + loopWidth;
-    }
-  };
+  if (
+    current < start
+  ) {
+    viewport.scrollLeft =
+      current + loopWidth;
+  }
+};
 
   viewport.addEventListener(
     "scroll",
