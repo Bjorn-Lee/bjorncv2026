@@ -92,321 +92,374 @@ document.addEventListener("DOMContentLoaded", () => {
      WORK — INFINITE CAROUSEL
      ========================= */
 
-  initWorkCarousel();
+function initWorkCarousel() {
+  const viewport = document.querySelector(".work-window");
+  const track = document.querySelector(".work-scroll");
 
+  if (!viewport || !track) return;
 
-  function initWorkCarousel() {
-    const viewport = document.querySelector(".work-window");
-    const track = document.querySelector(".work-scroll");
+  const originalCards = Array.from(
+    track.querySelectorAll(".work-card")
+  );
 
-    if (!viewport || !track) return;
+  if (originalCards.length < 2) return;
 
-    const originalCards = Array.from(
-      track.querySelectorAll(".work-card")
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+  const AUTOPLAY_SPEED = 0.03;
+  const DRAG_THRESHOLD = 6;
+
+  let loopWidth = 0;
+  let isDragging = false;
+  let dragMoved = false;
+  let startX = 0;
+  let startScrollLeft = 0;
+
+  let autoplayFrame = null;
+  let lastTimestamp = null;
+  let autoplayPaused = reducedMotion.matches;
+
+  /*
+   * CREATE CLONES
+   * Structure:
+   * [clone] 01 02 03 04
+   * [real]  01 02 03 04
+   * [clone] 01 02 03 04
+   */
+
+  const beforeFragment =
+    document.createDocumentFragment();
+
+  const afterFragment =
+    document.createDocumentFragment();
+
+  originalCards.forEach((card) => {
+    const beforeClone = card.cloneNode(true);
+
+    beforeClone.dataset.clone = "before";
+    beforeClone.setAttribute(
+      "aria-hidden",
+      "true"
+    );
+    beforeClone.tabIndex = -1;
+
+    beforeFragment.appendChild(
+      beforeClone
     );
 
-    if (originalCards.length < 2) return;
+    const afterClone = card.cloneNode(true);
 
-
-    /* =========================
-       SETTINGS
-       ========================= */
-
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
+    afterClone.dataset.clone = "after";
+    afterClone.setAttribute(
+      "aria-hidden",
+      "true"
     );
+    afterClone.tabIndex = -1;
 
-    const AUTOPLAY_SPEED = 0.03;
-    const DRAG_THRESHOLD = 6;
-
-
-    /* =========================
-       STATE
-       ========================= */
-
-    let loopWidth = 0;
-    let isResetting = false;
-
-    let autoplayFrame = null;
-    let lastTimestamp = null;
-    let autoplayPaused = reducedMotion.matches;
-
-    let isDragging = false;
-    let dragMoved = false;
-    let startX = 0;
-    let startScrollLeft = 0;
-
-
-    /* =========================
-       CREATE CLONES
-       ========================= */
-
-    const beforeFragment =
-      document.createDocumentFragment();
-
-    const afterFragment =
-      document.createDocumentFragment();
-
-    originalCards.forEach((card) => {
-      const beforeClone = card.cloneNode(true);
-
-      beforeClone.dataset.clone = "before";
-      beforeClone.setAttribute("aria-hidden", "true");
-      beforeClone.tabIndex = -1;
-
-      beforeFragment.appendChild(beforeClone);
-
-
-      const afterClone = card.cloneNode(true);
-
-      afterClone.dataset.clone = "after";
-      afterClone.setAttribute("aria-hidden", "true");
-      afterClone.tabIndex = -1;
-
-      afterFragment.appendChild(afterClone);
-    });
-
-    track.insertBefore(
-      beforeFragment,
-      originalCards[0]
+    afterFragment.appendChild(
+      afterClone
     );
+  });
 
-    track.appendChild(afterFragment);
+  track.insertBefore(
+    beforeFragment,
+    originalCards[0]
+  );
 
+  track.appendChild(afterFragment);
 
-    /* =========================
-       GET REAL CARDS
-       ========================= */
+  /*
+   * REAL CARDS
+   */
 
-    const realCards = Array.from(
-      track.querySelectorAll(
-        ".work-card:not([data-clone])"
-      )
-    );
+  const realCards = Array.from(
+    track.querySelectorAll(
+      ".work-card:not([data-clone])"
+    )
+  );
 
+  /*
+   * CALCULATE ONE COMPLETE CARD SET
+   */
 
-    /* =========================
-       MEASURE LOOP
-       ========================= */
-const calculateLoopWidth = () => {
-  if (realCards.length < 2) return;
+  const calculateLoopWidth = () => {
+    if (realCards.length < 2) return;
 
-  const cardStep =
-    realCards[1].offsetLeft -
-    realCards[0].offsetLeft;
+    const firstCard =
+      realCards[0];
 
-  loopWidth = cardStep * realCards.length;
-};
+    const secondCard =
+      realCards[1];
 
+    const cardStep =
+      secondCard.offsetLeft -
+      firstCard.offsetLeft;
 
-    /* =========================
-       INITIAL POSITION
-       ========================= */
+    loopWidth =
+      cardStep * realCards.length;
+  };
 
-    const setInitialPosition = () => {
-      calculateLoopWidth();
+  /*
+   * PUT VIEWPORT AT ORIGINAL 01
+   */
 
-      if (!loopWidth || !realCards[0]) return;
+  const setInitialPosition = () => {
+    calculateLoopWidth();
 
+    if (!loopWidth) return;
+
+    viewport.scrollLeft =
+      realCards[0].offsetLeft;
+  };
+
+  /*
+   * INFINITE LOOP
+   */
+
+  const handleLoop = () => {
+    if (!loopWidth) return;
+
+    const start =
+      realCards[0].offsetLeft;
+
+    const current =
+      viewport.scrollLeft;
+
+    /*
+     * Passed original 01-04
+     * → move back by exactly one set
+     */
+
+    if (
+      current >=
+      start + loopWidth
+    ) {
       viewport.scrollLeft =
-        realCards[0].offsetLeft;
-    };
+        current - loopWidth;
 
+      return;
+    }
 
-    /* =========================
-       INFINITE LOOP
-       ========================= */
+    /*
+     * Dragged into the left clone area
+     * → move forward by exactly one set
+     */
 
- const handleLoop = () => {
-  if (!loopWidth || isResetting) return;
+    if (
+      current < start
+    ) {
+      viewport.scrollLeft =
+        current + loopWidth;
+    }
+  };
 
-  const start = realCards[0].offsetLeft;
-  const current = viewport.scrollLeft;
+  viewport.addEventListener(
+    "scroll",
+    handleLoop,
+    { passive: true }
+  );
 
-  if (current >= start + loopWidth) {
-    isResetting = true;
+  /*
+   * AUTOPLAY
+   */
 
-    viewport.scrollLeft = current - loopWidth;
+  const stopAutoplay = () => {
+    autoplayPaused = true;
+  };
 
-    requestAnimationFrame(() => {
-      isResetting = false;
-    });
+  const resumeAutoplay = () => {
+    if (!reducedMotion.matches) {
+      autoplayPaused = false;
+      lastTimestamp = null;
+    }
+  };
 
-    return;
-  }
-
-  if (current < start) {
-    isResetting = true;
-
-    viewport.scrollLeft = current + loopWidth;
-
-    requestAnimationFrame(() => {
-      isResetting = false;
-    });
-  }
-};
-
-
-    /* =========================
-       AUTOPLAY
-       ========================= */
-
-    const stopAutoplay = () => {
-      autoplayPaused = true;
-    };
-
-
-    const resumeAutoplay = () => {
-      if (!reducedMotion.matches) {
-        autoplayPaused = false;
-      }
-    };
-
-
-    const autoplay = (timestamp) => {
-      if (lastTimestamp === null) {
-        lastTimestamp = timestamp;
-      }
-
-      const elapsed =
-        timestamp - lastTimestamp;
-
+  const autoplay = (timestamp) => {
+    if (lastTimestamp === null) {
       lastTimestamp = timestamp;
+    }
 
+    const elapsed =
+      timestamp - lastTimestamp;
+
+    lastTimestamp = timestamp;
+
+    if (
+      !autoplayPaused &&
+      !reducedMotion.matches &&
+      !isDragging
+    ) {
+      viewport.scrollLeft +=
+        elapsed * AUTOPLAY_SPEED;
+    }
+
+    autoplayFrame =
+      requestAnimationFrame(
+        autoplay
+      );
+  };
+
+  const startAutoplay = () => {
+    if (autoplayFrame) return;
+
+    lastTimestamp = null;
+
+    autoplayFrame =
+      requestAnimationFrame(
+        autoplay
+      );
+  };
+
+  viewport.addEventListener(
+    "mouseenter",
+    stopAutoplay
+  );
+
+  viewport.addEventListener(
+    "mouseleave",
+    resumeAutoplay
+  );
+
+  /*
+   * MOUSE WHEEL
+   */
+
+  viewport.addEventListener(
+    "wheel",
+    (event) => {
+      const isVerticalWheel =
+        Math.abs(event.deltaY) >
+        Math.abs(event.deltaX);
+
+      if (!isVerticalWheel) return;
+
+      event.preventDefault();
+
+      stopAutoplay();
+
+      viewport.scrollLeft +=
+        event.deltaY;
+
+      window.clearTimeout(
+        viewport._wheelResumeTimer
+      );
+
+      viewport._wheelResumeTimer =
+        window.setTimeout(() => {
+          resumeAutoplay();
+        }, 250);
+    },
+    { passive: false }
+  );
+
+  /*
+   * POINTER DRAG / SWIPE
+   */
+
+  viewport.style.touchAction =
+    "pan-y";
+
+  viewport.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (
+        event.pointerType === "mouse" &&
+        event.button !== 0
+      ) {
+        return;
+      }
+
+      isDragging = true;
+      dragMoved = false;
+
+      startX =
+        event.clientX;
+
+      startScrollLeft =
+        viewport.scrollLeft;
+
+      stopAutoplay();
+
+      viewport.classList.add(
+        "is-dragging"
+      );
+
+      viewport.setPointerCapture(
+        event.pointerId
+      );
+    }
+  );
+
+  viewport.addEventListener(
+    "pointermove",
+    (event) => {
+      if (!isDragging) return;
+
+      const distance =
+        event.clientX - startX;
 
       if (
-        !autoplayPaused &&
-        !reducedMotion.matches &&
-        !isDragging
+        Math.abs(distance) >
+        DRAG_THRESHOLD
       ) {
-        viewport.scrollLeft +=
-          elapsed * AUTOPLAY_SPEED;
+        dragMoved = true;
       }
 
-      autoplayFrame =
-        requestAnimationFrame(autoplay);
-    };
+      viewport.scrollLeft =
+        startScrollLeft -
+        distance;
+    }
+  );
 
+  const stopDragging = (event) => {
+    if (!isDragging) return;
 
-    const startAutoplay = () => {
-      if (autoplayFrame) return;
+    isDragging = false;
 
-      lastTimestamp = null;
-
-      autoplayFrame =
-        requestAnimationFrame(autoplay);
-    };
-
-
-    /* Pause while hovering */
-
-    viewport.addEventListener(
-      "mouseenter",
-      stopAutoplay
+    viewport.classList.remove(
+      "is-dragging"
     );
 
-    viewport.addEventListener(
-      "mouseleave",
-      resumeAutoplay
-    );
+    if (
+      event &&
+      viewport.hasPointerCapture(
+        event.pointerId
+      )
+    ) {
+      viewport.releasePointerCapture(
+        event.pointerId
+      );
+    }
 
+    handleLoop();
 
-    /* =========================
-       MOUSE WHEEL
-       ========================= */
+    resumeAutoplay();
 
-    viewport.addEventListener(
-      "wheel",
-      (event) => {
-        const isVerticalWheel =
-          Math.abs(event.deltaY) >
-          Math.abs(event.deltaX);
+    if (dragMoved) {
+      viewport.dataset.dragged =
+        "true";
 
-        if (!isVerticalWheel) return;
+      window.setTimeout(() => {
+        delete viewport.dataset.dragged;
+      }, 0);
+    }
+  };
 
-        event.preventDefault();
+  viewport.addEventListener(
+    "pointerup",
+    stopDragging
+  );
 
-        stopAutoplay();
+  viewport.addEventListener(
+    "pointercancel",
+    stopDragging
+  );
 
-        viewport.scrollLeft +=
-          event.deltaY;
-
-        window.clearTimeout(
-          viewport._wheelResumeTimer
-        );
-
-        viewport._wheelResumeTimer =
-          window.setTimeout(() => {
-            resumeAutoplay();
-          }, 250);
-      },
-      {
-        passive: false
-      }
-    );
-
-
-    /* =========================
-       POINTER DRAG / SWIPE
-       ========================= */
-
-    viewport.style.touchAction = "pan-y";
-
-
-    viewport.addEventListener(
-      "pointerdown",
-      (event) => {
-        if (
-          event.pointerType === "mouse" &&
-          event.button !== 0
-        ) {
-          return;
-        }
-
-        isDragging = true;
-        dragMoved = false;
-
-        startX = event.clientX;
-        startScrollLeft =
-          viewport.scrollLeft;
-
-        stopAutoplay();
-
-        viewport.classList.add(
-          "is-dragging"
-        );
-
-        viewport.setPointerCapture(
-          event.pointerId
-        );
-      }
-    );
-
-
-    viewport.addEventListener(
-      "pointermove",
-      (event) => {
-        if (!isDragging) return;
-
-        const distance =
-          event.clientX - startX;
-
-
-        if (
-          Math.abs(distance) >
-          DRAG_THRESHOLD
-        ) {
-          dragMoved = true;
-        }
-
-
-        viewport.scrollLeft =
-          startScrollLeft - distance;
-      }
-    );
-
-
-    const stopDragging = (event) => {
+  viewport.addEventListener(
+    "lostpointercapture",
+    () => {
       if (!isDragging) return;
 
       isDragging = false;
@@ -415,124 +468,74 @@ const calculateLoopWidth = () => {
         "is-dragging"
       );
 
-
-      if (
-        event &&
-        viewport.hasPointerCapture(
-          event.pointerId
-        )
-      ) {
-        viewport.releasePointerCapture(
-          event.pointerId
-        );
-      }
-
+      handleLoop();
 
       resumeAutoplay();
+    }
+  );
 
+  /*
+   * PREVENT CLICK AFTER DRAG
+   */
 
-      /* Prevent the click generated
-         immediately after dragging */
+  viewport.addEventListener(
+    "click",
+    (event) => {
+      if (
+        viewport.dataset.dragged ===
+        "true"
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
 
-      if (dragMoved) {
-        viewport.dataset.dragged = "true";
-
-        window.setTimeout(() => {
-          delete viewport.dataset.dragged;
-        }, 0);
+        delete viewport.dataset.dragged;
       }
-    };
+    },
+    true
+  );
 
+  /*
+   * PREVENT IMAGE DRAG
+   */
 
-    viewport.addEventListener(
-      "pointerup",
-      stopDragging
-    );
-
-    viewport.addEventListener(
-      "pointercancel",
-      stopDragging
-    );
-
-    viewport.addEventListener(
-      "lostpointercapture",
-      () => {
-        if (!isDragging) return;
-
-        isDragging = false;
-
-        viewport.classList.remove(
-          "is-dragging"
-        );
-
-        resumeAutoplay();
-      }
-    );
-
-
-    /* =========================
-       PREVENT CLICK AFTER DRAG
-       ========================= */
-
-    viewport.addEventListener(
-      "click",
-      (event) => {
-        if (
-          viewport.dataset.dragged === "true"
-        ) {
+  track
+    .querySelectorAll("img")
+    .forEach((img) => {
+      img.addEventListener(
+        "dragstart",
+        (event) => {
           event.preventDefault();
-          event.stopPropagation();
-
-          delete viewport.dataset.dragged;
         }
-      },
-      true
-    );
+      );
+    });
 
+  /*
+   * RESIZE
+   */
 
-    /* =========================
-       PREVENT IMAGE DRAG
-       ========================= */
+  let resizeTimer = null;
 
-    track
-      .querySelectorAll("img")
-      .forEach((img) => {
-        img.addEventListener(
-          "dragstart",
-          (event) => {
-            event.preventDefault();
-          }
-        );
-      });
+  window.addEventListener(
+    "resize",
+    () => {
+      window.clearTimeout(
+        resizeTimer
+      );
 
+      resizeTimer =
+        window.setTimeout(() => {
+          calculateLoopWidth();
+          handleLoop();
+        }, 150);
+    }
+  );
 
-    /* =========================
-       RESIZE
-       ========================= */
+  /*
+   * REDUCED MOTION
+   */
 
-    let resizeTimer = null;
-
-    window.addEventListener(
-      "resize",
-      () => {
-        window.clearTimeout(
-          resizeTimer
-        );
-
-        resizeTimer =
-          window.setTimeout(() => {
-            calculateLoopWidth();
-            handleLoop();
-          }, 150);
-      }
-    );
-
-
-    /* =========================
-       REDUCED MOTION
-       ========================= */
-
-    const handleMotionPreference = () => {
+  const handleMotionPreference =
+    () => {
       if (reducedMotion.matches) {
         stopAutoplay();
       } else {
@@ -540,30 +543,30 @@ const calculateLoopWidth = () => {
       }
     };
 
-
-    if (
-      typeof reducedMotion.addEventListener ===
-      "function"
-    ) {
-      reducedMotion.addEventListener(
-        "change",
-        handleMotionPreference
-      );
-    }
-
-
-    /* =========================
-       INITIALIZE
-       ========================= */
-
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        setInitialPosition();
-
-        if (!reducedMotion.matches) {
-          startAutoplay();
-        }
-      });
-    });
+  if (
+    typeof reducedMotion.addEventListener ===
+    "function"
+  ) {
+    reducedMotion.addEventListener(
+      "change",
+      handleMotionPreference
+    );
   }
-});
+
+  /*
+   * INITIALIZE
+   */
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setInitialPosition();
+
+      if (
+        !reducedMotion.matches
+      ) {
+        startAutoplay();
+      }
+    });
+  });
+}
+
