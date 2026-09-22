@@ -3,7 +3,7 @@
 document.addEventListener("DOMContentLoaded", () => {
   const header = document.querySelector("#site-header");
   const revealItems = document.querySelectorAll(
-    ".section-intro, .capability, .work-card, .impact-item, .experience-row, .capability-line, .process-grid article, .coffee-copy, .profile-photo-wrap, .profile-details, .contact-main, .contact-bottom"
+    ".section-intro,  .work-card, .impact-item, .experience-row, .profile-photo-wrap, .profile-details, .contact-main, .contact-bottom"
   );
 
   // Year
