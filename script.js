@@ -542,6 +542,6 @@ function initWorkCarousel() {
       if (!reducedMotion.matches) {
         startAnimation();
       }
-    });
-  });
+initWorkCarousel();
+});
 }
