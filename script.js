@@ -188,20 +188,15 @@ document.addEventListener("DOMContentLoaded", () => {
     /* =========================
        MEASURE LOOP
        ========================= */
+const calculateLoopWidth = () => {
+  if (realCards.length < 2) return;
 
-    const calculateLoopWidth = () => {
-      if (realCards.length < 2) return;
+  const cardStep =
+    realCards[1].offsetLeft -
+    realCards[0].offsetLeft;
 
-      const firstCard = realCards[0];
-      const secondCard = realCards[1];
-
-      const cardStep =
-        secondCard.offsetLeft -
-        firstCard.offsetLeft;
-
-      loopWidth =
-        cardStep * realCards.length;
-    };
+  loopWidth = cardStep * realCards.length;
+};
 
 
     /* =========================
@@ -222,54 +217,34 @@ document.addEventListener("DOMContentLoaded", () => {
        INFINITE LOOP
        ========================= */
 
-    const handleLoop = () => {
-      if (!loopWidth || isResetting) return;
+ const handleLoop = () => {
+  if (!loopWidth || isResetting) return;
 
-      const start =
-        realCards[0].offsetLeft;
+  const start = realCards[0].offsetLeft;
+  const current = viewport.scrollLeft;
 
-      const current =
-        viewport.scrollLeft;
+  if (current >= start + loopWidth) {
+    isResetting = true;
 
+    viewport.scrollLeft = current - loopWidth;
 
-      /* Move from AFTER clones
-         back to REAL cards */
+    requestAnimationFrame(() => {
+      isResetting = false;
+    });
 
-      if (current >= start + loopWidth) {
-        isResetting = true;
+    return;
+  }
 
-        viewport.scrollLeft =
-          current - loopWidth;
+  if (current < start) {
+    isResetting = true;
 
-        requestAnimationFrame(() => {
-          isResetting = false;
-        });
+    viewport.scrollLeft = current + loopWidth;
 
-        return;
-      }
-
-
-      /* Move from BEFORE clones
-         back to REAL cards */
-
-      if (current < start) {
-        isResetting = true;
-
-        viewport.scrollLeft =
-          current + loopWidth;
-
-        requestAnimationFrame(() => {
-          isResetting = false;
-        });
-      }
-    };
-
-
-    viewport.addEventListener(
-      "scroll",
-      handleLoop,
-      { passive: true }
-    );
+    requestAnimationFrame(() => {
+      isResetting = false;
+    });
+  }
+};
 
 
     /* =========================
