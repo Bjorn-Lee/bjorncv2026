@@ -191,7 +191,7 @@ function initWorkCarousel() {
 
     if (!loopWidth) return;
 
-    viewport.scrollLeft = getOriginalStart();
+    viewport.scrollLeft = getOriginalStart() - loopWidth;
   };
 
   const animate = (time) => {
