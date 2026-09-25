@@ -123,6 +123,9 @@ function initWorkCarousel() {
   originalCards.forEach((card) => {
     const beforeClone = card.cloneNode(true);
 
+    beforeClone.classList.remove("reveal");
+    beforeClone.classList.add("is-visible");
+
     beforeClone.dataset.clone = "before";
     beforeClone.setAttribute("aria-hidden", "true");
     beforeClone.tabIndex = -1;
@@ -130,6 +133,9 @@ function initWorkCarousel() {
     beforeFragment.appendChild(beforeClone);
 
     const afterClone = card.cloneNode(true);
+
+    afterClone.classList.remove("reveal");
+    afterClone.classList.add("is-visible");
 
     afterClone.dataset.clone = "after";
     afterClone.setAttribute("aria-hidden", "true");
