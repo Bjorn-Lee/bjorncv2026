@@ -676,7 +676,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
 
 @media (max-width: 680px) {
   .section-intro,
-  .section-no { min-width: auto; }
+  .section-no { min-width: auto; margin-bottom: 1rem;  width: fit-content;  font-size: 0.8em;  line-height: 1; }
   .hero-grid { grid-template-columns: 1fr; padding-block: 6rem 5rem; }
   .hero-index {  margin-bottom: 1rem;  width: fit-content;  font-size: 0.8em;  line-height: 1;}
   .hero-bottom { align-items: start; flex-direction: column; }
