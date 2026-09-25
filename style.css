@@ -678,7 +678,7 @@ h1,h2,h3,h4 { font-family: "Urbanist", "未來螢黑 TC", "Noto Sans TC", sans-s
   .section-intro,
   .section-no { min-width: auto; }
   .hero-grid { grid-template-columns: 1fr; padding-block: 6rem 5rem; }
-  .hero-index { margin-bottom: 1rem; }
+  .hero-index {  margin-bottom: 1rem;  width: fit-content;  font-size: 0.8em;  line-height: 1;}
   .hero-bottom { align-items: start; flex-direction: column; }
   .circle-link { width: 76px; height: 76px; }
   .experience-row { grid-template-columns: 1fr; gap: 1rem; }
